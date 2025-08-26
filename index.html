@@ -2,74 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Web Chess — Beginner & Expert (Fixed)</title>
+  <title>Web Chess — Beginner & Expert (stable)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root{
-      --bg:#0f1220;
-      --panel:#171a2b;
-      --accent:#77e0ff;
-      --accent-2:#9bff77;
-      --light:#e6ecff;
-      --danger:#ff7a7a;
-      --square-dark:#3c4a6b;
-      --square-light:#b9c6ea;
-      --hint:#ffe28a;
-      --move:#87ffa0;
-      --sel:#ffd166;
-      --shadow:0 10px 30px rgba(0,0,0,.25);
-      --radius:18px;
+      --panel:#171a2b; --light:#e6ecff; --danger:#ff7a7a;
+      --square-dark:#3c4a6b; --square-light:#b9c6ea;
+      --hint:#ffe28a; --sel:#ffd166;
+      --shadow:0 10px 30px rgba(0,0,0,.25); --radius:18px;
     }
     *{box-sizing:border-box}
     body{
       margin:0; min-height:100dvh; color:var(--light);
       background: radial-gradient(1200px 1200px at 80% -10%, #2c3a66 0%, #121528 60%, #0c0f1e 100%) fixed;
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
       display:grid; place-items:center; padding:20px;
     }
     .app{ width:min(1080px,98vw); display:grid; grid-template-columns: 1fr 340px; gap:18px; }
     @media (max-width: 980px){ .app{ grid-template-columns: 1fr } }
     .board-wrap{ background:linear-gradient(180deg,#1c2242,#12172f); padding:18px; border-radius:var(--radius); box-shadow:var(--shadow); display:grid; grid-template-rows:auto 1fr auto; gap:12px; }
     .bar{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-    .bar h1{font-size:18px; letter-spacing:.3px; margin:0; opacity:.9}
-    .controls{display:flex; gap:8px; flex-wrap:wrap}
+    .bar h1{font-size:18px; margin:0; opacity:.9}
     .chip, select, button{
       background:var(--panel); border:1px solid #2a3158; color:var(--light);
-      padding:8px 12px; border-radius:12px; font-weight:600; letter-spacing:.3px;
+      padding:8px 12px; border-radius:12px; font-weight:600;
     }
-    button.primary{border-color:#2f6fee; background:#2b3564}
-    button:hover, select:hover{filter:brightness(1.1)}
-    button:active{transform:translateY(1px)}
+    button.primary{background:#2b3564; border-color:#2f6fee}
+    button:hover, select:hover{filter:brightness(1.08)}
     .board{
       width:100%; aspect-ratio:1/1; display:grid; grid-template-columns:repeat(8,1fr);
-      border-radius:14px; overflow:hidden; border:2px solid #2a3158;
-      user-select:none;
+      border-radius:14px; overflow:hidden; border:2px solid #2a3158; user-select:none;
     }
-    .sq{ position:relative; display:grid; place-items:center; font-size:clamp(28px, 5vw, 54px); line-height:1; cursor:pointer; }
+    .sq{ position:relative; display:grid; place-items:center; cursor:pointer; }
+    .sq .piece{ font-size: clamp(28px, 5vw, 54px); line-height:1 }
     .light{ background: var(--square-light) }
     .dark{ background: var(--square-dark) }
-    .sq .coord{ position:absolute; left:6px; top:4px; font-size:12px; opacity:.5; color:#0e1326; font-weight:700; mix-blend-mode: soft-light; }
-    .sq.dark .coord{ color:#cdd7ff; mix-blend-mode:normal; opacity:.35 }
+    .coord{ position:absolute; left:6px; top:4px; font-size:12px; opacity:.5; color:#0e1326; font-weight:700; mix-blend-mode: soft-light; }
+    .dark .coord{ color:#cdd7ff; mix-blend-mode:normal; opacity:.35 }
     .sq.sel{outline:3px solid var(--sel); z-index:2}
     .sq.move{ box-shadow: inset 0 0 0 4px rgba(119,224,255,.8) }
-    .sq.hint::after{ content:""; width:16px; height:16px; border-radius:50%; background:var(--hint); opacity:.9; box-shadow:0 0 0 4px rgba(0,0,0,.12); }
+    .sq.hint::after{ content:""; width:16px; height:16px; border-radius:50%; background:var(--hint); opacity:.95; box-shadow:0 0 0 4px rgba(0,0,0,.12); }
     .sq.check{ box-shadow: inset 0 0 0 4px var(--danger) }
     .right{ background:linear-gradient(180deg,#141831,#0f132a); border:1px solid #2a3158; border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; display:grid; gap:14px; align-content:start; }
-    .right h2{font-size:16px; margin:0 0 4px 0; opacity:.9}
     .status{ background:#0d1125; border:1px solid #2a3158; border-radius:12px; padding:12px; min-height:48px }
-    .captured{display:flex; gap:6px; flex-wrap:wrap; font-size:20px; opacity:.9}
-    .legend{display:flex; gap:10px; flex-wrap:wrap; align-items:center; font-size:13px; opacity:.8}
-    .legend span{display:inline-flex; align-items:center; gap:6px}
-    .dot{width:12px; height:12px; border-radius:50%}
-    .dot.hl{background:var(--hint)} .dot.mv{background:var(--move)} .dot.sel{background:var(--sel)} .dot.ck{background:var(--danger)}
-    .moves{ background:#0d1125; border:1px solid #2a3158; border-radius:12px; padding:10px; height:260px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono"; font-size:13px; line-height:1.55; white-space:pre-wrap }
-    .foot{font-size:12px; opacity:.75}
+    .moves{ background:#0d1125; border:1px solid #2a3158; border-radius:12px; padding:10px; height:260px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas; font-size:13px; line-height:1.55; white-space:pre-wrap }
     dialog{ border:none; border-radius:16px; padding:0; overflow:hidden; box-shadow:var(--shadow); background:#101632; color:var(--light) }
     .modal{padding:14px 16px; display:grid; gap:12px}
     .promo-grid{ display:grid; grid-template-columns: repeat(4, 60px); gap:8px; justify-content:center }
     .promo-grid button{font-size:28px; padding:10px; background:#1b244b; border:1px solid #2a3158; border-radius:12px; cursor:pointer}
-    .promo-grid button:hover{filter:brightness(1.1)}
-    .backdrop{backdrop-filter: blur(4px)}
   </style>
 </head>
 <body>
@@ -99,37 +79,20 @@
       <div id="board" class="board" aria-label="Chessboard"></div>
 
       <div class="bar">
-        <div class="legend">
-          <span><span class="dot hl"></span>Hints</span>
-          <span><span class="dot mv"></span>Last move</span>
-          <span><span class="dot sel"></span>Selection</span>
-          <span><span class="dot ck"></span>Check</span>
-        </div>
-        <div id="eval" class="chip" title="Positive means advantage for White">Eval: —</div>
+        <div class="chip">Eval: <span id="eval">—</span></div>
+        <div id="status" class="chip">Welcome! Choose side & level, then press <b>New Game</b>.</div>
       </div>
     </div>
 
     <aside class="right">
-      <div>
-        <h2>Status</h2>
-        <div id="status" class="status">Welcome! Choose a side & level, then press <b>New Game</b>.</div>
-      </div>
-      <div>
-        <h2>Captured</h2>
-        <div id="captured" class="captured"></div>
-      </div>
-      <div>
-        <h2>Move List</h2>
-        <div id="moves" class="moves" aria-live="polite"></div>
-      </div>
-      <div class="foot">
-        Tip: Click a piece, then a highlighted square. Promotions will ask what you want.
-      </div>
+      <div><b>Captured</b><div id="captured" style="margin-top:6px;font-size:20px;display:flex;gap:6px;flex-wrap:wrap"></div></div>
+      <div><b>Move List</b><div id="moves" class="moves" aria-live="polite"></div></div>
+      <div style="font-size:12px;opacity:.75">Tip: Click a piece, then a highlighted square. Promotions will ask what you want.</div>
     </aside>
   </div>
 
-  <!-- Promotion Modal (with fallback if dialog unsupported) -->
-  <dialog id="promoDialog" class="backdrop">
+  <!-- Promotion Modal (has prompt() fallback if <dialog> unsupported) -->
+  <dialog id="promoDialog">
     <div class="modal">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
         <strong>Choose promotion</strong>
@@ -140,385 +103,116 @@
   </dialog>
 
   <script>
-    /* ---------- Robust helpers to avoid "rook only" blanking ---------- */
-    // Safe clone that never throws on older browsers
+    /* ---------- Safe utilities ---------- */
     const safeClone = (obj) =>
       (typeof window.structuredClone === "function")
         ? window.structuredClone(obj)
         : JSON.parse(JSON.stringify(obj));
-
-    // Feature guards
     const hasDialog = typeof HTMLDialogElement !== "undefined";
-
-    // Lightweight console guard (older IE may not have console)
     (function(){ if(!window.console){ window.console = {log:()=>{}, warn:()=>{}, error:()=>{}} } })();
 
-    /* ---------------------------- Chess Core --------------------------- */
-    const PIECE_TO_CHAR = {
-      wP:'♙', wN:'♘', wB:'♗', wR:'♖', wQ:'♕', wK:'♔',
-      bP:'♟', bN:'♞', bB:'♝', bR:'♜', bQ:'♛', bK:'♚'
-    };
+    /* ---------- Chess Core ---------- */
+    const PIECE_TO_CHAR = { wP:'♙', wN:'♘', wB:'♗', wR:'♖', wQ:'♕', wK:'♔', bP:'♟', bN:'♞', bB:'♝', bR:'♜', bQ:'♛', bK:'♚' };
     const PIECE_VALUE = { P:100, N:320, B:330, R:500, Q:900, K:20000 };
     const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
-    // Piece-square tables (simplified; white perspective; black mirrored)
     const PST = {
-      P:[ 0,0,0,0,0,0,0,0, 50,50,50,50,50,50,50,50, 10,10,20,30,30,20,10,10, 5,5,10,25,25,10,5,5, 0,0,0,20,20,0,0,0, 5,-5,-10,0,0,-10,-5,5, 5,10,10,-20,-20,10,10,5, 0,0,0,0,0,0,0,0 ],
-      N:[ -50,-40,-30,-30,-30,-30,-40,-50,-40,-20,0,0,0,0,-20,-40,-30,0,10,15,15,10,0,-30,-30,5,15,20,20,15,5,-30,-30,0,15,20,20,15,0,-30,-30,5,10,15,15,10,5,-30,-40,-20,0,5,5,0,-20,-40,-50,-40,-30,-30,-30,-30,-40,-50 ],
-      B:[ -20,-10,-10,-10,-10,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,10,10,5,0,-10,-10,5,5,10,10,5,5,-10,-10,0,10,10,10,10,0,-10,-10,10,10,10,10,10,10,-10,-10,5,0,0,0,0,5,-10,-20,-10,-10,-10,-10,-10,-10,-20 ],
-      R:[ 0,0,0,5,5,0,0,0,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,5,10,10,10,10,10,10,5,0,0,0,0,0,0,0,0 ],
-      Q:[ -20,-10,-10,-5,-5,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,5,5,5,0,-10,-5,0,5,5,5,5,0,-5,0,0,5,5,5,5,0,-5,-10,5,5,5,5,5,0,-10,-10,0,5,0,0,0,0,-10,-20,-10,-10,-5,-5,-10,-10,-20 ],
-      K:[ -30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-20,-30,-30,-40,-40,-30,-30,-20,-10,-20,-20,-20,-20,-20,-20,-10,20,20,0,0,0,0,20,20,20,30,10,0,0,10,30,20 ]
+      P:[0,0,0,0,0,0,0,0,50,50,50,50,50,50,50,50,10,10,20,30,30,20,10,10,5,5,10,25,25,10,5,5,0,0,0,20,20,0,0,0,5,-5,-10,0,0,-10,-5,5,5,10,10,-20,-20,10,10,5,0,0,0,0,0,0,0,0],
+      N:[-50,-40,-30,-30,-30,-30,-40,-50,-40,-20,0,0,0,0,-20,-40,-30,0,10,15,15,10,0,-30,-30,5,15,20,20,15,5,-30,-30,0,15,20,20,15,0,-30,-30,5,10,15,15,10,5,-30,-40,-20,0,5,5,0,-20,-40,-50,-40,-30,-30,-30,-30,-40,-50],
+      B:[-20,-10,-10,-10,-10,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,10,10,5,0,-10,-10,5,5,10,10,5,5,-10,-10,0,10,10,10,10,0,-10,-10,10,10,10,10,10,10,-10,-10,5,0,0,0,0,5,-10,-20,-10,-10,-10,-10,-10,-10,-20],
+      R:[0,0,0,5,5,0,0,0,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,5,10,10,10,10,10,10,5,0,0,0,0,0,0,0,0],
+      Q:[-20,-10,-10,-5,-5,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,5,5,5,0,-10,-5,0,5,5,5,5,0,-5,0,0,5,5,5,5,0,-5,-10,5,5,5,5,5,0,-10,-10,0,5,0,0,0,0,-10,-20,-10,-10,-5,-5,-10,-10,-20],
+      K:[-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-20,-30,-30,-40,-40,-30,-30,-20,-10,-20,-20,-20,-20,-20,-20,-10,20,20,0,0,0,0,20,20,20,30,10,0,0,10,30,20]
     };
-
-    const idx = (r,c)=> r*8 + c;
-    const inb = (r,c)=> r>=0 && r<8 && c>=0 && c<8;
-    const algebraic = (r,c)=> "abcdefgh"[c] + (8-r);
+    const idx=(r,c)=>r*8+c, inb=(r,c)=>r>=0&&r<8&&c>=0&&c<8, alg=(r,c)=>"abcdefgh"[c]+(8-r), opp=c=>c==='w'?'b':'w';
     const coordOf = sq => [8-parseInt(sq[1]), "abcdefgh".indexOf(sq[0])];
 
-    function fenToState(fen){
-      const [piece, turn, cast, ep, half, full] = fen.split(/\s+/);
-      const rows = piece.split('/');
-      const board = Array(64).fill(null);
-      rows.forEach((row, r)=>{
-        let c=0;
-        for(const ch of row){
-          if(/\d/.test(ch)){ c += parseInt(ch,10); }
-          else{
-            const color = (ch===ch.toUpperCase())?'w':'b';
-            const tp = ch.toUpperCase();
-            board[idx(r,c)] = color + tp;
-            c++;
+    function fenToState(f){
+      const [piece,turn,cast,ep,half,full]=f.split(/\s+/); const rows=piece.split('/'); const board=Array(64).fill(null);
+      rows.forEach((row,r)=>{ let c=0; for(const ch of row){ if(/\d/.test(ch)) c+=+ch; else{ const clr=(ch===ch.toUpperCase())?'w':'b'; board[idx(r,c)]=clr+ch.toUpperCase(); c++; } }});
+      const cr={wK:false,wQ:false,bK:false,bQ:false}; if(cast.includes('K'))cr.wK=true; if(cast.includes('Q'))cr.wQ=true; if(cast.includes('k'))cr.bK=true; if(cast.includes('q'))cr.bQ=true;
+      return {board, turn, castling:cr, ep: ep==='-'?null:ep, halfmove:+(half||0), fullmove:+(full||1), history:[], lastMove:null};
+    }
+    const pieceAt=(S,r,c)=>S.board[idx(r,c)];
+    const put=(S,r,c,p)=>{S.board[idx(r,c)]=p};
+    function isAttacked(S,[tr,tc],by){
+      const dir=by==='w'?-1:1;
+      for(const dc of [-1,1]){ const r=tr+dir,c=tc+dc; if(inb(r,c)&&pieceAt(S,r,c)===(by+'P')) return true; }
+      for(const [dr,dc] of [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]){ const r=tr+dr,c=tc+dc; if(inb(r,c)&&pieceAt(S,r,c)===(by+'N')) return true; }
+      const rays=(dirs,types)=>{ for(const [dr,dc] of dirs){ let r=tr+dr,c=tc+dc; while(inb(r,c)){ const p=pieceAt(S,r,c); if(p){ if(p[0]===by && (types.includes(p[1])||p[1]==='Q')) return true; break; } r+=dr;c+=dc; } } return false };
+      if(rays([[1,1],[1,-1],[-1,1],[-1,-1]],['B'])) return true;
+      if(rays([[1,0],[-1,0],[0,1],[0,-1]],['R'])) return true;
+      for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ if(!dr&&!dc)continue; const r=tr+dr,c=tc+dc; if(inb(r,c)&&pieceAt(S,r,c)===(by+'K')) return true; }
+      return false;
+    }
+    function inCheck(S,who){ for(let r=0;r<8;r++)for(let c=0;c<8;c++){ if(pieceAt(S,r,c)===(who+'K')) return isAttacked(S,[r,c],opp(who)); } return false; }
+    function allMoves(S){
+      const out=[];
+      for(let r=0;r<8;r++)for(let c=0;c<8;c++){ const p=pieceAt(S,r,c); if(!p||p[0]!==S.turn) continue;
+        const t=p[1];
+        if(t==='P'){ const dir=S.turn==='w'?-1:1, start=S.turn==='w'?6:1, last=S.turn==='w'?0:7;
+          if(inb(r+dir,c)&&!pieceAt(S,r+dir,c)){ pushPawn(r,c,r+dir,c); if(r===start && !pieceAt(S,r+2*dir,c)) out.push({from:[r,c],to:[r+2*dir,c],pawn2:true}); }
+          for(const dc of [-1,1]){ const nr=r+dir,nc=c+dc; if(!inb(nr,nc))continue; const t=pieceAt(S,nr,nc); if(t&&t[0]!==S.turn) pushPawn(r,c,nr,nc,t); }
+          if(S.ep){ const [er,ec]=coordOf(S.ep); if(er===r+dir && Math.abs(ec-c)===1) out.push({from:[r,c],to:[er,ec],ep:true}); }
+          function pushPawn(fr,fc,tr,tc,captured=null){ const promo=tr===last; if(promo){ for(const pp of ['Q','R','B','N']) out.push({from:[fr,fc],to:[tr,tc],captured,promo:pp}); } else out.push({from:[fr,fc],to:[tr,tc],captured}); }
+        } else if(t==='N'){ for(const [dr,dc] of [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]){ const nr=r+dr,nc=c+dc; if(!inb(nr,nc))continue; const q=pieceAt(S,nr,nc); if(!q||q[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:q||null}); } }
+        else if(t==='B'||t==='R'||t==='Q'){ const dirs=t==='B'?[[1,1],[1,-1],[-1,1],[-1,-1]]:t==='R'?[[1,0],[-1,0],[0,1],[0,-1]]:[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];
+          for(const [dr,dc] of dirs){ let nr=r+dr,nc=c+dc; while(inb(nr,nc)){ const q=pieceAt(S,nr,nc); if(!q) out.push({from:[r,c],to:[nr,nc]}); else { if(q[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:q}); break; } nr+=dr; nc+=dc; } }
+        } else if(t==='K'){ for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ if(!dr&&!dc)continue; const nr=r+dr,nc=c+dc; if(!inb(nr,nc))continue; const q=pieceAt(S,nr,nc); if(!q||q[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:q||null}); }
+          const clr=S.turn, back=clr==='w'?7:0;
+          if(r===back&&c===4){
+            if((clr==='w'&&S.castling.wK)||(clr==='b'&&S.castling.bK)){
+              if(!pieceAt(S,back,5)&&!pieceAt(S,back,6)&&!isAttacked(S,[back,4],opp(clr))&&!isAttacked(S,[back,5],opp(clr))&&!isAttacked(S,[back,6],opp(clr))) out.push({from:[back,4],to:[back,6],castle:'K'});
+            }
+            if((clr==='w'&&S.castling.wQ)||(clr==='b'&&S.castling.bQ)){
+              if(!pieceAt(S,back,3)&&!pieceAt(S,back,2)&&!pieceAt(S,back,1)&&!isAttacked(S,[back,4],opp(clr))&&!isAttacked(S,[back,3],opp(clr))&&!isAttacked(S,[back,2],opp(clr))) out.push({from:[back,4],to:[back,2],castle:'Q'});
+            }
           }
         }
-      });
-      const cr = {wK:false,wQ:false,bK:false,bQ:false};
-      if(cast.includes('K')) cr.wK=true;
-      if(cast.includes('Q')) cr.wQ=true;
-      if(cast.includes('k')) cr.bK=true;
-      if(cast.includes('q')) cr.bQ=true;
-      return {
-        board, turn, castling:cr,
-        ep: ep==='-'? null : ep,
-        halfmove: parseInt(half||'0',10),
-        fullmove: parseInt(full||'1',10),
-        history:[],
-        lastMove:null
-      };
-    }
-
-    function pieceAt(S, r,c){ return S.board[idx(r,c)] }
-    function putPiece(S,r,c,p){ S.board[idx(r,c)] = p }
-    function swapTurn(S){ S.turn = (S.turn==='w'?'b':'w') }
-
-    function allMoves(S){
-      const moves=[];
-      for(let r=0;r<8;r++) for(let c=0;c<8;c++){
-        const p=pieceAt(S,r,c); if(!p||p[0]!==S.turn) continue;
-        const pt=p[1];
-        if(pt==='P') genPawn(S,r,c,moves);
-        else if(pt==='N') genKnight(S,r,c,moves);
-        else if(pt==='B') genSlider(S,r,c,moves,[[1,1],[1,-1],[-1,1],[-1,-1]]);
-        else if(pt==='R') genSlider(S,r,c,moves,[[1,0],[-1,0],[0,1],[0,-1]]);
-        else if(pt==='Q') genSlider(S,r,c,moves,[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]]);
-        else if(pt==='K') genKing(S,r,c,moves);
       }
       const legal=[];
-      for(const m of moves){
-        doMove(S,m);
-        const inC = inCheck(S, S.turn==='w'?'b':'w');
-        undoMove(S);
-        if(!inC) legal.push(m);
-      }
+      for(const m of out){ doMove(S,m); const bad=inCheck(S,opp(S.turn)); undoMove(S); if(!bad) legal.push(m); }
       return legal;
-
-      function genPawn(S,r,c,out){
-        const dir = S.turn==='w' ? -1 : 1;
-        const startRow = S.turn==='w'?6:1;
-        const lastRow  = S.turn==='w'?0:7;
-
-        if(inb(r+dir,c) && !pieceAt(S,r+dir,c)){
-          pushPawnMove(r,c,r+dir,c);
-          if(r===startRow && !pieceAt(S,r+2*dir,c)) out.push({from:[r,c],to:[r+2*dir,c],pawn2:true});
-        }
-        for(const dc of [-1,1]){
-          const nr=r+dir, nc=c+dc;
-          if(!inb(nr,nc)) continue;
-          const t=pieceAt(S,nr,nc);
-          if(t && t[0]!==S.turn){ pushPawnMove(r,c,nr,nc,t) }
-        }
-        if(S.ep){
-          const [er, ec] = coordOf(S.ep);
-          if(er===r+dir && Math.abs(ec-c)===1){
-            out.push({from:[r,c],to:[er,ec],ep:true});
-          }
-        }
-        function pushPawnMove(fr,fc,tr,tc,captured=null){
-          const promo = (tr===lastRow);
-          if(promo){
-            for(const toP of ['Q','R','B','N']) out.push({from:[fr,fc],to:[tr,tc],captured, promo:toP});
-          }else{
-            out.push({from:[fr,fc],to:[tr,tc],captured});
-          }
-        }
-      }
-      function genKnight(S,r,c,out){
-        const steps=[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
-        for(const [dr,dc] of steps){
-          const nr=r+dr, nc=c+dc; if(!inb(nr,nc)) continue;
-          const t=pieceAt(S,nr,nc);
-          if(!t || t[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:t||null});
-        }
-      }
-      function genSlider(S,r,c,out,dirs){
-        for(const [dr,dc] of dirs){
-          let nr=r+dr, nc=c+dc;
-          while(inb(nr,nc)){
-            const t=pieceAt(S,nr,nc);
-            if(!t){ out.push({from:[r,c],to:[nr,nc]}); }
-            else{
-              if(t[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:t});
-              break;
-            }
-            nr+=dr; nc+=dc;
-          }
-        }
-      }
-      function genKing(S,r,c,out){
-        for(let dr=-1; dr<=1; dr++) for(let dc=-1; dc<=1; dc++){
-          if(!dr && !dc) continue;
-          const nr=r+dr, nc=c+dc; if(!inb(nr,nc)) continue;
-          const t=pieceAt(S,nr,nc);
-          if(!t || t[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:t||null});
-        }
-        const clr=S.turn;
-        const back = (clr==='w')?7:0;
-        if(r===back && c===4){
-          if((clr==='w' && S.castling.wK) || (clr==='b' && S.castling.bK)){
-            if(!pieceAt(S,back,5) && !pieceAt(S,back,6)){
-              if(!isSquareAttacked(S,[back,4],opp(clr)) && !isSquareAttacked(S,[back,5],opp(clr)) && !isSquareAttacked(S,[back,6],opp(clr))){
-                out.push({from:[back,4],to:[back,6],castle:'K'});
-              }
-            }
-          }
-          if((clr==='w' && S.castling.wQ) || (clr==='b' && S.castling.bQ)){
-            if(!pieceAt(S,back,3) && !pieceAt(S,back,2) && !pieceAt(S,back,1)){
-              if(!isSquareAttacked(S,[back,4],opp(clr)) && !isSquareAttacked(S,[back,3],opp(clr)) && !isSquareAttacked(S,[back,2],opp(clr))){
-                out.push({from:[back,4],to:[back,2],castle:'Q'});
-              }
-            }
-          }
-        }
-      }
     }
-
-    function opp(c){ return c==='w'?'b':'w' }
-
-    function isSquareAttacked(S, [tr,tc], by){
-      const dir = by==='w'?-1:1;
-      for(const dc of [-1,1]){
-        const r=tr+dir, c=tc+dc;
-        if(inb(r,c)){ const p=pieceAt(S,r,c); if(p && p===(by+'P')) return true; }
-      }
-      const steps=[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
-      for(const [dr,dc] of steps){
-        const r=tr+dr, c=tc+dc; if(inb(r,c)){ const p=pieceAt(S,r,c); if(p && p===(by+'N')) return true; }
-      }
-      const bDirs=[[1,1],[1,-1],[-1,1],[-1,-1]];
-      if(ray(by,'B',bDirs)) return true;
-      const rDirs=[[1,0],[-1,0],[0,1],[0,-1]];
-      if(ray(by,'R',rDirs)) return true;
-      for(let dr=-1; dr<=1; dr++) for(let dc=-1; dc<=1; dc++){
-        if(!dr && !dc) continue;
-        const r=tr+dr, c=tc+dc; if(inb(r,c)){ const p=pieceAt(S,r,c); if(p && p===(by+'K')) return true; }
-      }
-      return false;
-      function ray(color, type, dirs){
-        for(const [dr,dc] of dirs){
-          let r=tr+dr, c=tc+dc;
-          while(inb(r,c)){
-            const p=pieceAt(S,r,c);
-            if(p){
-              if(p[0]===color){
-                if(p[1]===type || p[1]==='Q') return true;
-              }
-              break;
-            }
-            r+=dr; c+=dc;
-          }
-        }
-        return false;
-      }
+    function doMove(S,m){
+      S.history.push({board:S.board.slice(), turn:S.turn, castling:{...S.castling}, ep:S.ep, halfmove:S.halfmove, fullmove:S.fullmove, lastMove:m});
+      const [fr,fc]=m.from,[tr,tc]=m.to; const moving=pieceAt(S,fr,fc), target=pieceAt(S,tr,tc);
+      if(moving[1]==='P'||target) S.halfmove=0; else S.halfmove++;
+      if(S.ep){ const [er,ec]=coordOf(S.ep); if(m.ep&&tr===er&&tc===ec){ const capr=S.turn==='w'?tr+1:tr-1; put(S,capr,tc,null); } }
+      put(S,tr,tc,moving); put(S,fr,fc,null);
+      if(m.castle==='K'){ const back=S.turn==='w'?7:0; const rook=pieceAt(S,back,7); put(S,back,5,rook); put(S,back,7,null); }
+      else if(m.castle==='Q'){ const back=S.turn==='w'?7:0; const rook=pieceAt(S,back,0); put(S,back,3,rook); put(S,back,0,null); }
+      if(m.promo) put(S,tr,tc,S.turn+m.promo);
+      if(moving==='wK'){S.castling.wK=false;S.castling.wQ=false}
+      if(moving==='bK'){S.castling.bK=false;S.castling.bQ=false}
+      if(moving==='wR'){ if(fr===7&&fc===0)S.castling.wQ=false; if(fr===7&&fc===7)S.castling.wK=false }
+      if(moving==='bR'){ if(fr===0&&fc===0)S.castling.bQ=false; if(fr===0&&fc===7)S.castling.bK=false }
+      if(target==='wR'){ if(tr===7&&tc===0)S.castling.wQ=false; if(tr===7&&tc===7)S.castling.wK=false }
+      if(target==='bR'){ if(tr===0&&tc===0)S.castling.bQ=false; if(tr===0&&tc===7)S.castling.bK=false }
+      S.ep = m.pawn2 ? alg(S.turn==='w'?tr+1:tr-1, tc) : null;
+      if(S.turn==='b') S.fullmove++; S.turn=opp(S.turn); S.lastMove={...m};
     }
-
-    function inCheck(S, who){
-      for(let r=0;r<8;r++) for(let c=0;c<8;c++){
-        if(pieceAt(S,r,c)===(who+'K')) return isSquareAttacked(S,[r,c], opp(who));
-      }
-      return false;
-    }
-
-    function doMove(S, m){
-      const snap = {
-        board: S.board.slice(),
-        turn: S.turn,
-        castling: {...S.castling},
-        ep: S.ep,
-        halfmove: S.halfmove,
-        fullmove: S.fullmove,
-        lastMove: m
-      };
-      S.history.push(snap);
-
-      const [fr,fc]=m.from, [tr,tc]=m.to;
-      const moving = pieceAt(S,fr,fc);
-      const target = pieceAt(S,tr,tc);
-
-      if(moving[1]==='P' || target) S.halfmove=0; else S.halfmove++;
-
-      if(S.ep){
-        const [er,ec]=coordOf(S.ep);
-        if(m.ep && tr===er && tc===ec){
-          const capr = S.turn==='w' ? tr+1 : tr-1;
-          putPiece(S, capr, tc, null);
-        }
-      }
-
-      putPiece(S, tr, tc, moving);
-      putPiece(S, fr, fc, null);
-
-      if(m.castle==='K'){
-        const back = S.turn==='w'?7:0;
-        const rookFrom=[back,7], rookTo=[back,5];
-        const rook = pieceAt(S,rookFrom[0],rookFrom[1]);
-        putPiece(S, rookTo[0], rookTo[1], rook);
-        putPiece(S, rookFrom[0], rookFrom[1], null);
-      } else if(m.castle==='Q'){
-        const back = S.turn==='w'?7:0;
-        const rookFrom=[back,0], rookTo=[back,3];
-        const rook = pieceAt(S,rookFrom[0],rookFrom[1]);
-        putPiece(S, rookTo[0], rookTo[1], rook);
-        putPiece(S, rookFrom[0], rookFrom[1], null);
-      }
-
-      if(m.promo){ putPiece(S, tr, tc, S.turn + m.promo); }
-
-      if(moving==='wK'){ S.castling.wK=false; S.castling.wQ=false }
-      if(moving==='bK'){ S.castling.bK=false; S.castling.bQ=false }
-      if(moving==='wR'){ if(fr===7 && fc===0) S.castling.wQ=false; if(fr===7 && fc===7) S.castling.wK=false }
-      if(moving==='bR'){ if(fr===0 && fc===0) S.castling.bQ=false; if(fr===0 && fc===7) S.castling.bK=false }
-      if(target==='wR'){ if(tr===7 && tc===0) S.castling.wQ=false; if(tr===7 && tc===7) S.castling.wK=false }
-      if(target==='bR'){ if(tr===0 && tc===0) S.castling.bQ=false; if(tr===0 && tc===7) S.castling.bK=false }
-
-      if(m.pawn2){
-        const epRow = S.turn==='w' ? tr+1 : tr-1;
-        S.ep = algebraic(epRow, tc);
-      } else {
-        S.ep = null;
-      }
-
-      if(S.turn==='b') S.fullmove++;
-      swapTurn(S);
-      S.lastMove = {from:[fr,fc],to:[tr,tc], ...m};
-    }
-
-    function undoMove(S){
-      const prev = S.history.pop(); if(!prev) return;
-      S.board = prev.board;
-      S.turn = prev.turn;
-      S.castling = prev.castling;
-      S.ep = prev.ep;
-      S.halfmove = prev.halfmove;
-      S.fullmove = prev.fullmove;
-      S.lastMove = prev.lastMove;
-    }
-
-    /* ---------------------------- AI / Search -------------------------- */
+    function undoMove(S){ const h=S.history.pop(); if(!h) return; Object.assign(S,{board:h.board,turn:h.turn,castling:h.castling,ep:h.ep,halfmove:h.halfmove,fullmove:h.fullmove,lastMove:h.lastMove}); }
     function evaluate(S){
-      let score=0;
-      for(let r=0;r<8;r++) for(let c=0;c<8;c++){
-        const p=pieceAt(S,r,c); if(!p) continue;
-        const side = (p[0]==='w')?1:-1;
-        const type = p[1];
-        score += side * PIECE_VALUE[type];
-        let sqIndex = r*8+c;
-        let table = PST[type];
-        if(p[0]==='w'){ score += table[sqIndex]; }
-        else{ score -= table[(7-r)*8+c]; }
+      let sc=0;
+      for(let r=0;r<8;r++)for(let c=0;c<8;c++){ const p=pieceAt(S,r,c); if(!p)continue; const s=p[0]==='w'?1:-1, t=p[1];
+        sc+=s*PIECE_VALUE[t]; sc+= (p[0]==='w'? 1:-1) * (p[0]==='w'? PST[t][r*8+c] : -PST[t][(7-r)*8+c]);
       }
-      const t= S.turn;
-      const ms = allMoves(S).length;
-      S.turn = (S.turn==='w'?'b':'w');
-      const os = allMoves(S).length;
-      S.turn = t;
-      score += 2*(ms - os);
-      return score;
+      const t=S.turn, ms=allMoves(S).length; S.turn=opp(S.turn); const os=allMoves(S).length; S.turn=t; sc+=2*(ms-os);
+      return sc;
     }
-
     function pickMove(S, level){
-      const moves = allMoves(S);
-      if(moves.length===0) return null;
-      if(level==='beginner'){
-        const caps = moves.filter(m=>m.captured);
-        if(caps.length) return caps[Math.floor(Math.random()*caps.length)];
-        return moves[Math.floor(Math.random()*moves.length)];
-      }
-      const depth = 3;
-      let bestScore = -1e9, best = moves[0];
-      orderMoves(moves);
-      for(const m of moves){
-        doMove(S,m);
-        const sc = -alphabeta(S, depth-1, -1e9, 1e9);
-        undoMove(S);
-        if(sc>bestScore){ bestScore=sc; best=m; }
-      }
-      lastEval = bestScore;
-      return best;
-
-      function alphabeta(S, d, alpha, beta){
-        const mv = allMoves(S);
-        if(d===0 || mv.length===0) return quiesce(S, alpha, beta, 8);
-        orderMoves(mv);
-        let val = -1e9;
-        for(const m of mv){
-          doMove(S,m);
-          val = Math.max(val, -alphabeta(S, d-1, -beta, -alpha));
-          undoMove(S);
-          if(val>=beta) return val;
-          if(val>alpha) alpha=val;
-        }
-        return val;
-      }
-      function quiesce(S, alpha, beta, capBudget){
-        const stand = evaluate(S);
-        if(stand>=beta) return stand;
-        if(alpha<stand) alpha=stand;
-        if(capBudget<=0) return stand;
-        const caps = allMoves(S).filter(m=>m.captured);
-        orderMoves(caps);
-        for(const m of caps){
-          doMove(S,m);
-          const score = -quiesce(S, -beta, -alpha, capBudget-1);
-          undoMove(S);
-          if(score>=beta) return score;
-          if(score>alpha) alpha=score;
-        }
-        return alpha;
-      }
-      function orderMoves(mv){
-        mv.sort((a,b)=> scoreMove(b)-scoreMove(a));
-        function valOf(p){ return p?PIECE_VALUE[p[1]]:0 }
-        function scoreMove(m){
-          let s=0;
-          if(m.captured) s += 1000 + valOf(m.captured);
-          if(m.promo) s += 800 + PIECE_VALUE[m.promo];
-          if(m.castle) s += 200;
-          return s;
-        }
-      }
+      const moves=allMoves(S); if(!moves.length) return null;
+      if(level==='beginner'){ const caps=moves.filter(m=>m.captured); return (caps.length?caps:moves)[Math.floor(Math.random()*(caps.length?caps.length:moves.length))]; }
+      const depth=3; let best=-1e9, choice=moves[0];
+      order(moves);
+      for(const m of moves){ doMove(S,m); const sc=-ab(S,depth-1,-1e9,1e9); undoMove(S); if(sc>best){best=sc; choice=m;} }
+      lastEval=best; return choice;
+      function ab(S,d,a,b){ const mv=allMoves(S); if(d===0||!mv.length) return q(S,a,b,8); order(mv); let v=-1e9; for(const m of mv){ doMove(S,m); v=Math.max(v,-ab(S,d-1,-b,-a)); undoMove(S); if(v>=b) return v; if(v>a) a=v; } return v; }
+      function q(S,a,b,bud){ const stand=evaluate(S); if(stand>=b) return stand; if(a<stand)a=stand; if(bud<=0) return stand; const caps=allMoves(S).filter(m=>m.captured); order(caps); for(const m of caps){ doMove(S,m); const s=-q(S,-b,-a,bud-1); undoMove(S); if(s>=b) return s; if(s>a)a=s; } return a; }
+      function order(mv){ mv.sort((A,B)=>score(B)-score(A)); function v(p){return p?PIECE_VALUE[p[1]]:0} function score(m){ let s=0; if(m.captured)s+=1000+v(m.captured); if(m.promo)s+=800+PIECE_VALUE[m.promo]; if(m.castle)s+=200; return s; } }
     }
 
-    /* --------------------------- UI Rendering -------------------------- */
+    /* ---------- UI ---------- */
     const boardEl = document.getElementById('board');
     const statusEl = document.getElementById('status');
     const evalEl = document.getElementById('eval');
@@ -534,205 +228,155 @@
     const cancelPromo = document.getElementById('cancelPromo');
 
     let S = fenToState(START_FEN);
-    let selected = null;
-    let hints = [];
-    let whiteBottom = true;
-    let lastEval = null;
-    let humanColor = 'w';
+    let selected = null, hints = [], whiteBottom = true, lastEval = null, humanColor = 'w';
 
-    function newGame(){
-      S = fenToState(START_FEN);
-      selected=null; hints=[]; lastEval=null;
-      humanColor = (sideSel.value==='white')?'w':'b';
-      render(true);
-      status("Game started. You are <b>"+(humanColor==='w'?'White':'Black')+"</b>. Level: <b>"+levelSel.value+"</b>.");
-      if(S.turn!==humanColor) setTimeout(aiTurn, 200);
+    function status(html){ statusEl.innerHTML = html; }
+    const orient = (r,c)=> whiteBottom?[r,c]:[7-r,7-c];
+    const deorient = (vr,vc)=> whiteBottom?[vr,vc]:[7-vr,7-vc];
+
+    function buildBoard(){
+      boardEl.innerHTML='';
+      for(let vr=0;vr<8;vr++){
+        for(let vc=0;vc<8;vc++){
+          const btn=document.createElement('button');
+          btn.type='button';
+          btn.className='sq '+(((vr+vc)%2===0)?'light':'dark');
+          btn.dataset.r=vr; btn.dataset.c=vc;
+
+          const piece=document.createElement('div');
+          piece.className='piece'; btn.appendChild(piece);
+
+          const coord=document.createElement('div');
+          coord.className='coord'; btn.appendChild(coord);
+
+          btn.addEventListener('click', onSquare);
+          boardEl.appendChild(btn);
+        }
+      }
     }
 
-    function render(rebuild=false){
-      renderCaptured();
-      evalEl.textContent = "Eval: " + (lastEval===null ? "—" : (lastEval/100).toFixed(2));
-      if(rebuild){
-        boardEl.innerHTML="";
-        for(let vr=0; vr<8; vr++){
-          for(let vc=0; vc<8; vc++){
-            const d=document.createElement('button'); d.className='sq '+(((vr+vc)%2===0)?'light':'dark');
-            d.type='button';
-            d.dataset.r=vr; d.dataset.c=vc;
-            const coord=document.createElement('div'); coord.className='coord';
-            d.appendChild(coord);
-            d.addEventListener('click', onSquare);
-            boardEl.appendChild(d);
-          }
-        }
-      }
-      const kids = [...boardEl.children];
-      for(let vr=0; vr<8; vr++){
-        for(let vc=0; vc<8; vc++){
-          const r = whiteBottom ? vr : 7-vr;
-          const c = whiteBottom ? vc : 7-vc;
-          const tile = kids[idx(vr,vc)];
-          const p = pieceAt(S,r,c);
-          tile.textContent = p ? PIECE_TO_CHAR[p] : '';
+    function render(){
+      // eval
+      evalEl.textContent = (lastEval===null ? '—' : (lastEval/100).toFixed(2));
+
+      // board
+      const kids=[...boardEl.children];
+      for(let vr=0;vr<8;vr++){
+        for(let vc=0;vc<8;vc++){
+          const r=whiteBottom?vr:7-vr, c=whiteBottom?vc:7-vc;
+          const tile=kids[idx(vr,vc)];
+          const pieceEl = tile.querySelector('.piece');
+          const coordEl = tile.querySelector('.coord');
+
+          // glyph
+          const p=pieceAt(S,r,c);
+          pieceEl.textContent = p ? PIECE_TO_CHAR[p] : '';
+
+          // classes
           tile.classList.remove('sel','hint','move','check');
-          tile.querySelector('.coord').textContent =
-            (vr===7 ? "abcdefgh"[c] : "") + (vc===0 ? (8-r) : "");
+
+          // coords
+          coordEl.textContent = (vr===7 ? "abcdefgh"[c] : "") + (vc===0 ? (8-r) : "");
+
+          // last move
           if(S.lastMove){
-            const [fr,fc] = S.lastMove.from, [tr,tc]=S.lastMove.to;
-            if(fr===r&&fc===c) tile.classList.add('move');
-            if(tr===r&&tc===c) tile.classList.add('move');
+            const [fr,fc]=S.lastMove.from,[tr,tc]=S.lastMove.to;
+            if((fr===r&&fc===c)||(tr===r&&tc===c)) tile.classList.add('move');
           }
         }
       }
+
+      // selection + hints
       if(selected){
-        const [sr,sc] = selected;
-        const [vr,vc] = orient(sr,sc);
-        kids[idx(vr,vc)].classList.add('sel');
-        for(const h of hints){
-          const [tr,tc] = h.to;
-          const [vr2,vc2] = orient(tr,tc);
-          kids[idx(vr2,vc2)].classList.add('hint');
-        }
+        const [sr,sc]=selected; const [svr,svc]=orient(sr,sc);
+        kids[idx(svr,svc)].classList.add('sel');
+        for(const h of hints){ const [tr,tc]=h.to; const [tvr,tvc]=orient(tr,tc); kids[idx(tvr,tvc)].classList.add('hint'); }
       }
-      renderMoves();
-      if(allMoves(S).length===0){
-        if(inCheck(S,S.turn)){
-          status(`<b>Checkmate.</b> ${S.turn==='w'?'White':'Black'} is mated. ${S.turn==='w'?'Black':'White'} wins.`);
-        }else{
-          status(`<b>Stalemate.</b> Draw.`);
-        }
+
+      // captured & moves
+      renderCaptured(); renderMoves();
+
+      // status
+      const legal=allMoves(S);
+      if(!legal.length){
+        status(inCheck(S,S.turn) ? `<b>Checkmate.</b> ${S.turn==='w'?'White':'Black'} is mated.` : `<b>Stalemate.</b> Draw.`);
       } else {
         status(`Turn: <b>${S.turn==='w'?'White':'Black'}</b>${inCheck(S,S.turn)?' — <span style="color:var(--danger)">Check!</span>':''}`);
       }
     }
 
     function renderCaptured(){
-      const startCounts = countMaterial(fenToState(START_FEN));
-      const nowCounts = countMaterial(S);
-      const out=[];
-      for(const side of ['w','b']){
-        for(const t of ['Q','R','B','N','P']){
-          const diff = startCounts[side][t] - nowCounts[side][t];
-          if(diff>0){
-            for(let i=0;i<diff;i++) out.push(PIECE_TO_CHAR[side+t]);
-          }
-        }
-      }
+      const start=fenToState(START_FEN), cnt=(St)=>{ const m={w:{Q:0,R:0,B:0,N:0,P:0},b:{Q:0,R:0,B:0,N:0,P:0}}; for(let i=0;i<64;i++){ const p=St.board[i]; if(p&&p[1]!=='K') m[p[0]][p[1]]++; } return m; };
+      const have=cnt(S), base=cnt(start), out=[];
+      for(const side of ['w','b']) for(const t of ['Q','R','B','N','P']){ const d=base[side][t]-have[side][t]; for(let i=0;i<d;i++) out.push(PIECE_TO_CHAR[side+t]); }
       capturedEl.innerHTML = out.map(x=>`<span>${x}</span>`).join('');
-      function countMaterial(St){
-        const m={w:{Q:0,R:0,B:0,N:0,P:0}, b:{Q:0,R:0,B:0,N:0,P:0}};
-        for(let i=0;i<64;i++){
-          const p=St.board[i]; if(!p) continue;
-          if(p[1]!=='K') m[p[0]][p[1]]++;
-        }
-        return m;
-      }
     }
-
     function renderMoves(){
-      const lines=[];
-      let moveNo=1;
+      const lines=[]; let n=1;
       for(const h of S.history){
-        if(h.turn==='w'){
-          lines.push(`${moveNo}. ${uci(h.lastMove)} `);
-        } else {
-          lines[lines.length-1] = (lines[lines.length-1]||"") + `${uci(h.lastMove)}`;
-          moveNo++;
-        }
+        if(h.turn==='w') lines.push(`${n}. ${uci(h.lastMove) } `);
+        else { lines[lines.length-1]=(lines[lines.length-1]||'')+`${uci(h.lastMove)}`; n++; }
       }
       movesEl.textContent = lines.join('\n');
     }
-
-    function uci(m){
-      if(!m) return '';
-      const [fr,fc]=m.from, [tr,tc]=m.to;
-      let s = algebraic(fr,fc) + algebraic(tr,tc);
-      if(m.promo) s += "="+m.promo;
-      if(m.castle) s += m.castle==='K'?' (O-O)':' (O-O-O)';
-      if(m.ep) s += " e.p.";
-      return s;
-    }
-
-    function orient(r,c){ return whiteBottom ? [r,c] : [7-r, 7-c]; }
-    function deorient(vr,vc){ return whiteBottom ? [vr,vc] : [7-vr, 7-vc]; }
-    function status(html){ statusEl.innerHTML = html; }
+    function uci(m){ if(!m)return''; const [fr,fc]=m.from,[tr,tc]=m.to; let s=alg(fr,fc)+alg(tr,tc); if(m.promo)s+='='+m.promo; if(m.castle)s+=' '+(m.castle==='K'?'(O-O)':'(O-O-O)'); if(m.ep)s+=' e.p.'; return s; }
 
     async function onSquare(e){
       if(S.turn!==humanColor) return;
-      const vr = parseInt(e.currentTarget.dataset.r,10);
-      const vc = parseInt(e.currentTarget.dataset.c,10);
-      const [r,c] = deorient(vr,vc);
-      const here = pieceAt(S,r,c);
+      const vr=+e.currentTarget.dataset.r, vc=+e.currentTarget.dataset.c;
+      const [r,c]=deorient(vr,vc); const here=pieceAt(S,r,c);
 
       if(selected){
-        const target = hints.find(h=> h.to[0]===r && h.to[1]===c);
+        const target=hints.find(h=>h.to[0]===r && h.to[1]===c);
         if(target){
-          let moveToPlay = {...target, from:selected, to:[r,c]};
-          if(moveToPlay.promo){
-            const choice = await choosePromotion(S.turn);
+          let move={...target, from:selected, to:[r,c]};
+          if(move.promo){
+            const choice=await choosePromotion(S.turn);
             if(!choice){ selected=null; hints=[]; render(); return; }
-            moveToPlay.promo = choice;
+            move.promo=choice;
           }
-          doMove(S, moveToPlay);
-          render();
-          requestAnimationFrame(()=>{ if(allMoves(S).length>0) aiTurn() });
+          doMove(S,move); selected=null; hints=[]; render();
+          requestAnimationFrame(()=>{ if(allMoves(S).length) aiTurn(); });
           return;
         }
       }
       if(here && here[0]===S.turn && here[0]===humanColor){
-        selected = [r,c];
-        const all = allMoves(S);
-        hints = all.filter(m=> m.from[0]===r && m.from[1]===c);
-        render();
-      } else {
-        selected=null; hints=[]; render();
-      }
+        selected=[r,c]; const all=allMoves(S); hints=all.filter(m=>m.from[0]===r && m.from[1]===c); render();
+      } else { selected=null; hints=[]; render(); }
     }
 
     function aiTurn(){
-      const level = levelSel.value;
-      const mv = pickMove(S, level);
+      const mv=pickMove(S, levelSel.value);
       if(!mv){ render(); return; }
-      doMove(S, mv);
-      render();
+      doMove(S,mv); render();
     }
 
-    // Promotion chooser with robust fallback if <dialog> unsupported
     function choosePromotion(turn){
       if(!hasDialog){
-        const ans = (prompt("Promote to (q,r,b,n)?", "q")||"q").toLowerCase();
-        const map = {q:'Q', r:'R', b:'B', n:'N'};
-        return Promise.resolve(map[ans] || 'Q');
+        const ans=(prompt("Promote to (q,r,b,n)?","q")||"q").toLowerCase(); const map={q:'Q',r:'R',b:'B',n:'N'}; return Promise.resolve(map[ans]||'Q');
       }
       return new Promise(resolve=>{
-        promoGrid.innerHTML = '';
-        const opts = (turn==='w')? ['Q','R','B','N'].map(t=>['w'+t, PIECE_TO_CHAR['w'+t]])
-                                  : ['Q','R','B','N'].map(t=>['b'+t, PIECE_TO_CHAR['b'+t]]);
-        for(const [code, sym] of opts){
-          const btn=document.createElement('button');
-          btn.textContent = sym;
-          btn.addEventListener('click', ()=>{ promoDialog.close(); resolve(code[1]); });
-          promoGrid.appendChild(btn);
-        }
-        cancelPromo.onclick = ()=>{ promoDialog.close(); resolve(null); };
+        promoGrid.innerHTML='';
+        for(const t of ['Q','R','B','N']){ const b=document.createElement('button'); b.textContent = turn==='w'?PIECE_TO_CHAR['w'+t]:PIECE_TO_CHAR['b'+t]; b.onclick=()=>{ promoDialog.close(); resolve(t); }; promoGrid.appendChild(b); }
+        cancelPromo.onclick=()=>{ promoDialog.close(); resolve(null); };
         promoDialog.showModal();
       });
     }
 
-    document.getElementById('new').addEventListener('click', newGame);
-    document.getElementById('undo').addEventListener('click', ()=>{
-      if(S.history.length===0) return;
-      undoMove(S);
-      if(S.turn!==humanColor && S.history.length>0) undoMove(S);
-      render();
-    });
-    document.getElementById('flip').addEventListener('click', ()=>{ whiteBottom=!whiteBottom; render(true) });
+    function newGame(){
+      S=fenToState(START_FEN); selected=null; hints=[]; lastEval=null;
+      humanColor = (sideSel.value==='white')?'w':'b';
+      buildBoard(); render();
+      status("Game started. You are <b>"+(humanColor==='w'?'White':'Black')+"</b>. Level: <b>"+levelSel.value+"</b>.");
+      if(S.turn!==humanColor) setTimeout(aiTurn, 200);
+    }
 
-    // Auto-start
-    newGame();
+    newBtn.addEventListener('click', newGame);
+    undoBtn.addEventListener('click', ()=>{ if(!S.history.length) return; undoMove(S); if(S.turn!==humanColor && S.history.length) undoMove(S); render(); });
+    flipBtn.addEventListener('click', ()=>{ whiteBottom=!whiteBottom; render(); });
 
-    // Friendly reminder if someone mistakenly opens the favicon as a page
-    console.log('If you only see a single rook, make sure you opened index.html (not a favicon or SVG). Also use a modern browser.');
+    // Boot
+    buildBoard(); newGame();
   </script>
 </body>
 </html>
