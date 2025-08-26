@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Web Chess — Beginner & Expert</title>
+  <title>Web Chess — Beginner & Expert (Fixed)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root{
@@ -22,27 +22,15 @@
     }
     *{box-sizing:border-box}
     body{
-      margin:0; min-height:100dvh; color:var(--light); background:
-        radial-gradient(1200px 1200px at 80% -10%, #2c3a66 0%, #121528 60%, #0c0f1e 100%) fixed;
+      margin:0; min-height:100dvh; color:var(--light);
+      background: radial-gradient(1200px 1200px at 80% -10%, #2c3a66 0%, #121528 60%, #0c0f1e 100%) fixed;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
       display:grid; place-items:center; padding:20px;
     }
-    .app{
-      width: min(1080px, 98vw);
-      display:grid; grid-template-columns: 1fr 340px; gap:18px;
-    }
-    @media (max-width: 980px){
-      .app{grid-template-columns: 1fr}
-    }
-    .board-wrap{
-      background:linear-gradient(180deg,#1c2242,#12172f);
-      padding:18px; border-radius:var(--radius); box-shadow:var(--shadow);
-      display:grid; grid-template-rows:auto 1fr auto; gap:12px;
-    }
-    .bar{
-      display:flex; gap:10px; align-items:center; justify-content:space-between;
-      flex-wrap:wrap;
-    }
+    .app{ width:min(1080px,98vw); display:grid; grid-template-columns: 1fr 340px; gap:18px; }
+    @media (max-width: 980px){ .app{ grid-template-columns: 1fr } }
+    .board-wrap{ background:linear-gradient(180deg,#1c2242,#12172f); padding:18px; border-radius:var(--radius); box-shadow:var(--shadow); display:grid; grid-template-rows:auto 1fr auto; gap:12px; }
+    .bar{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
     .bar h1{font-size:18px; letter-spacing:.3px; margin:0; opacity:.9}
     .controls{display:flex; gap:8px; flex-wrap:wrap}
     .chip, select, button{
@@ -57,44 +45,25 @@
       border-radius:14px; overflow:hidden; border:2px solid #2a3158;
       user-select:none;
     }
-    .sq{
-      position:relative; display:grid; place-items:center; font-size: clamp(28px, 5vw, 54px);
-      line-height:1; cursor:pointer;
-    }
+    .sq{ position:relative; display:grid; place-items:center; font-size:clamp(28px, 5vw, 54px); line-height:1; cursor:pointer; }
     .light{ background: var(--square-light) }
     .dark{ background: var(--square-dark) }
-    .sq .coord{
-      position:absolute; left:6px; top:4px; font-size:12px; opacity:.5; color:#0e1326; font-weight:700;
-      mix-blend-mode: soft-light;
-    }
+    .sq .coord{ position:absolute; left:6px; top:4px; font-size:12px; opacity:.5; color:#0e1326; font-weight:700; mix-blend-mode: soft-light; }
     .sq.dark .coord{ color:#cdd7ff; mix-blend-mode:normal; opacity:.35 }
     .sq.sel{outline:3px solid var(--sel); z-index:2}
-    .sq.move{ box-shadow: inset 0 0 0 4px rgba(135,255,160,.85) }
-    .sq.hint::after{
-      content:""; width:16px; height:16px; border-radius:50%; background:var(--hint);
-      opacity:.9; box-shadow:0 0 0 4px rgba(0,0,0,.12);
-    }
-    .sq.last{ box-shadow: inset 0 0 0 4px rgba(119,224,255,.8) }
+    .sq.move{ box-shadow: inset 0 0 0 4px rgba(119,224,255,.8) }
+    .sq.hint::after{ content:""; width:16px; height:16px; border-radius:50%; background:var(--hint); opacity:.9; box-shadow:0 0 0 4px rgba(0,0,0,.12); }
     .sq.check{ box-shadow: inset 0 0 0 4px var(--danger) }
-    .right{
-      background:linear-gradient(180deg,#141831,#0f132a); border:1px solid #2a3158;
-      border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; display:grid; gap:14px; align-content:start;
-    }
+    .right{ background:linear-gradient(180deg,#141831,#0f132a); border:1px solid #2a3158; border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; display:grid; gap:14px; align-content:start; }
     .right h2{font-size:16px; margin:0 0 4px 0; opacity:.9}
-    .status{
-      background:#0d1125; border:1px solid #2a3158; border-radius:12px; padding:12px; min-height:48px
-    }
+    .status{ background:#0d1125; border:1px solid #2a3158; border-radius:12px; padding:12px; min-height:48px }
     .captured{display:flex; gap:6px; flex-wrap:wrap; font-size:20px; opacity:.9}
     .legend{display:flex; gap:10px; flex-wrap:wrap; align-items:center; font-size:13px; opacity:.8}
     .legend span{display:inline-flex; align-items:center; gap:6px}
     .dot{width:12px; height:12px; border-radius:50%}
     .dot.hl{background:var(--hint)} .dot.mv{background:var(--move)} .dot.sel{background:var(--sel)} .dot.ck{background:var(--danger)}
-    .moves{
-      background:#0d1125; border:1px solid #2a3158; border-radius:12px; padding:10px; height:260px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono";
-      font-size:13px; line-height:1.55;
-    }
+    .moves{ background:#0d1125; border:1px solid #2a3158; border-radius:12px; padding:10px; height:260px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono"; font-size:13px; line-height:1.55; white-space:pre-wrap }
     .foot{font-size:12px; opacity:.75}
-    /* Promotion modal */
     dialog{ border:none; border-radius:16px; padding:0; overflow:hidden; box-shadow:var(--shadow); background:#101632; color:var(--light) }
     .modal{padding:14px 16px; display:grid; gap:12px}
     .promo-grid{ display:grid; grid-template-columns: repeat(4, 60px); gap:8px; justify-content:center }
@@ -159,7 +128,7 @@
     </aside>
   </div>
 
-  <!-- Promotion Modal -->
+  <!-- Promotion Modal (with fallback if dialog unsupported) -->
   <dialog id="promoDialog" class="backdrop">
     <div class="modal">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
@@ -171,9 +140,20 @@
   </dialog>
 
   <script>
-    /**************
-     * Chess Core *
-     **************/
+    /* ---------- Robust helpers to avoid "rook only" blanking ---------- */
+    // Safe clone that never throws on older browsers
+    const safeClone = (obj) =>
+      (typeof window.structuredClone === "function")
+        ? window.structuredClone(obj)
+        : JSON.parse(JSON.stringify(obj));
+
+    // Feature guards
+    const hasDialog = typeof HTMLDialogElement !== "undefined";
+
+    // Lightweight console guard (older IE may not have console)
+    (function(){ if(!window.console){ window.console = {log:()=>{}, warn:()=>{}, error:()=>{}} } })();
+
+    /* ---------------------------- Chess Core --------------------------- */
     const PIECE_TO_CHAR = {
       wP:'♙', wN:'♘', wB:'♗', wR:'♖', wQ:'♕', wK:'♔',
       bP:'♟', bN:'♞', bB:'♝', bR:'♜', bQ:'♛', bK:'♚'
@@ -183,60 +163,16 @@
 
     // Piece-square tables (simplified; white perspective; black mirrored)
     const PST = {
-      P:[ 0,0,0,0,0,0,0,0,
-          50,50,50,50,50,50,50,50,
-          10,10,20,30,30,20,10,10,
-          5,5,10,25,25,10,5,5,
-          0,0,0,20,20,0,0,0,
-          5,-5,-10,0,0,-10,-5,5,
-          5,10,10,-20,-20,10,10,5,
-          0,0,0,0,0,0,0,0 ],
-      N:[ -50,-40,-30,-30,-30,-30,-40,-50,
-          -40,-20,0,0,0,0,-20,-40,
-          -30,0,10,15,15,10,0,-30,
-          -30,5,15,20,20,15,5,-30,
-          -30,0,15,20,20,15,0,-30,
-          -30,5,10,15,15,10,5,-30,
-          -40,-20,0,5,5,0,-20,-40,
-          -50,-40,-30,-30,-30,-30,-40,-50 ],
-      B:[ -20,-10,-10,-10,-10,-10,-10,-20,
-          -10,0,0,0,0,0,0,-10,
-          -10,0,5,10,10,5,0,-10,
-          -10,5,5,10,10,5,5,-10,
-          -10,0,10,10,10,10,0,-10,
-          -10,10,10,10,10,10,10,-10,
-          -10,5,0,0,0,0,5,-10,
-          -20,-10,-10,-10,-10,-10,-10,-20 ],
-      R:[ 0,0,0,5,5,0,0,0,
-          -5,0,0,0,0,0,0,-5,
-          -5,0,0,0,0,0,0,-5,
-          -5,0,0,0,0,0,0,-5,
-          -5,0,0,0,0,0,0,-5,
-          -5,0,0,0,0,0,0,-5,
-          5,10,10,10,10,10,10,5,
-          0,0,0,0,0,0,0,0 ],
-      Q:[ -20,-10,-10,-5,-5,-10,-10,-20,
-          -10,0,0,0,0,0,0,-10,
-          -10,0,5,5,5,5,0,-10,
-          -5,0,5,5,5,5,0,-5,
-          0,0,5,5,5,5,0,-5,
-          -10,5,5,5,5,5,0,-10,
-          -10,0,5,0,0,0,0,-10,
-          -20,-10,-10,-5,-5,-10,-10,-20 ],
-      K:[ -30,-40,-40,-50,-50,-40,-40,-30,
-          -30,-40,-40,-50,-50,-40,-40,-30,
-          -30,-40,-40,-50,-50,-40,-40,-30,
-          -30,-40,-40,-50,-50,-40,-40,-30,
-          -20,-30,-30,-40,-40,-30,-30,-20,
-          -10,-20,-20,-20,-20,-20,-20,-10,
-          20,20,0,0,0,0,20,20,
-          20,30,10,0,0,10,30,20 ]
+      P:[ 0,0,0,0,0,0,0,0, 50,50,50,50,50,50,50,50, 10,10,20,30,30,20,10,10, 5,5,10,25,25,10,5,5, 0,0,0,20,20,0,0,0, 5,-5,-10,0,0,-10,-5,5, 5,10,10,-20,-20,10,10,5, 0,0,0,0,0,0,0,0 ],
+      N:[ -50,-40,-30,-30,-30,-30,-40,-50,-40,-20,0,0,0,0,-20,-40,-30,0,10,15,15,10,0,-30,-30,5,15,20,20,15,5,-30,-30,0,15,20,20,15,0,-30,-30,5,10,15,15,10,5,-30,-40,-20,0,5,5,0,-20,-40,-50,-40,-30,-30,-30,-30,-40,-50 ],
+      B:[ -20,-10,-10,-10,-10,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,10,10,5,0,-10,-10,5,5,10,10,5,5,-10,-10,0,10,10,10,10,0,-10,-10,10,10,10,10,10,10,-10,-10,5,0,0,0,0,5,-10,-20,-10,-10,-10,-10,-10,-10,-20 ],
+      R:[ 0,0,0,5,5,0,0,0,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,-5,0,0,0,0,0,0,-5,5,10,10,10,10,10,10,5,0,0,0,0,0,0,0,0 ],
+      Q:[ -20,-10,-10,-5,-5,-10,-10,-20,-10,0,0,0,0,0,0,-10,-10,0,5,5,5,5,0,-10,-5,0,5,5,5,5,0,-5,0,0,5,5,5,5,0,-5,-10,5,5,5,5,5,0,-10,-10,0,5,0,0,0,0,-10,-20,-10,-10,-5,-5,-10,-10,-20 ],
+      K:[ -30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-30,-40,-40,-50,-50,-40,-40,-30,-20,-30,-30,-40,-40,-30,-30,-20,-10,-20,-20,-20,-20,-20,-20,-10,20,20,0,0,0,0,20,20,20,30,10,0,0,10,30,20 ]
     };
 
-    // Helpers
     const idx = (r,c)=> r*8 + c;
     const inb = (r,c)=> r>=0 && r<8 && c>=0 && c<8;
-    const clone = obj => structuredClone ? structuredClone(obj) : JSON.parse(JSON.stringify(obj));
     const algebraic = (r,c)=> "abcdefgh"[c] + (8-r);
     const coordOf = sq => [8-parseInt(sq[1]), "abcdefgh".indexOf(sq[0])];
 
@@ -251,8 +187,7 @@
           else{
             const color = (ch===ch.toUpperCase())?'w':'b';
             const tp = ch.toUpperCase();
-            const map = {P:'P',N:'N',B:'B',R:'R',Q:'Q',K:'K'};
-            board[idx(r,c)] = color + map[tp];
+            board[idx(r,c)] = color + tp;
             c++;
           }
         }
@@ -267,35 +202,9 @@
         ep: ep==='-'? null : ep,
         halfmove: parseInt(half||'0',10),
         fullmove: parseInt(full||'1',10),
-        history:[]
+        history:[],
+        lastMove:null
       };
-    }
-
-    function stateToFEN(S){
-      let s=""; for(let r=0;r<8;r++){
-        let empty=0;
-        for(let c=0;c<8;c++){
-          const p=S.board[idx(r,c)];
-          if(!p) empty++;
-          else{
-            if(empty){ s+=empty; empty=0; }
-            const [cl,pt] = [p[0],p[1]];
-            const chMap = {P:'p',N:'n',B:'b',R:'r',Q:'q',K:'k'};
-            s += cl==='w' ? chMap[pt].toUpperCase() : chMap[pt];
-          }
-        }
-        if(empty) s+=empty;
-        if(r<7) s+='/';
-      }
-      const c = (S.castling.wK?'K':'')+(S.castling.wQ?'Q':'')+(S.castling.bK?'k':'')+(S.castling.bQ?'q':'');
-      return [
-        s,
-        S.turn,
-        c===""?'-':c,
-        S.ep?S.ep:'-',
-        S.halfmove,
-        S.fullmove
-      ].join(' ');
     }
 
     function pieceAt(S, r,c){ return S.board[idx(r,c)] }
@@ -303,7 +212,6 @@
     function swapTurn(S){ S.turn = (S.turn==='w'?'b':'w') }
 
     function allMoves(S){
-      // Generate pseudo-legal moves, then legality is checked by make/undo & inCheck
       const moves=[];
       for(let r=0;r<8;r++) for(let c=0;c<8;c++){
         const p=pieceAt(S,r,c); if(!p||p[0]!==S.turn) continue;
@@ -315,7 +223,6 @@
         else if(pt==='Q') genSlider(S,r,c,moves,[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]]);
         else if(pt==='K') genKing(S,r,c,moves);
       }
-      // filter legal
       const legal=[];
       for(const m of moves){
         doMove(S,m);
@@ -324,94 +231,81 @@
         if(!inC) legal.push(m);
       }
       return legal;
-    }
 
-    function genPawn(S,r,c,out){
-      const dir = S.turn==='w' ? -1 : 1;
-      const startRow = S.turn==='w'?6:1;
-      const lastRow  = S.turn==='w'?0:7;
+      function genPawn(S,r,c,out){
+        const dir = S.turn==='w' ? -1 : 1;
+        const startRow = S.turn==='w'?6:1;
+        const lastRow  = S.turn==='w'?0:7;
 
-      // advance 1
-      if(inb(r+dir,c) && !pieceAt(S,r+dir,c)){
-        pushPawnMove(r,c,r+dir,c);
-        // advance 2
-        if(r===startRow && !pieceAt(S,r+2*dir,c)) push({from:[r,c],to:[r+2*dir,c],pawn2:true});
-      }
-      // captures
-      for(const dc of [-1,1]){
-        const nr=r+dir, nc=c+dc;
-        if(!inb(nr,nc)) continue;
-        const t=pieceAt(S,nr,nc);
-        if(t && t[0]!==S.turn){ pushPawnMove(r,c,nr,nc,t) }
-      }
-      // en passant
-      if(S.ep){
-        const [er, ec] = coordOf(S.ep);
-        if(er===r+dir && Math.abs(ec-c)===1){
-          // capture target square en passant
-          push({from:[r,c],to:[er,ec],ep:true});
+        if(inb(r+dir,c) && !pieceAt(S,r+dir,c)){
+          pushPawnMove(r,c,r+dir,c);
+          if(r===startRow && !pieceAt(S,r+2*dir,c)) out.push({from:[r,c],to:[r+2*dir,c],pawn2:true});
         }
-      }
-
-      function pushPawnMove(fr,fc,tr,tc,captured=null){
-        const promo = (tr===lastRow);
-        if(promo){
-          for(const toP of ['Q','R','B','N']) out.push({from:[fr,fc],to:[tr,tc],captured, promo:toP});
-        }else{
-          out.push({from:[fr,fc],to:[tr,tc],captured});
-        }
-      }
-      function push(m){ out.push(m) }
-    }
-
-    function genKnight(S,r,c,out){
-      const steps=[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
-      for(const [dr,dc] of steps){
-        const nr=r+dr, nc=c+dc; if(!inb(nr,nc)) continue;
-        const t=pieceAt(S,nr,nc);
-        if(!t || t[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:t||null});
-      }
-    }
-
-    function genSlider(S,r,c,out,dirs){
-      for(const [dr,dc] of dirs){
-        let nr=r+dr, nc=c+dc;
-        while(inb(nr,nc)){
+        for(const dc of [-1,1]){
+          const nr=r+dir, nc=c+dc;
+          if(!inb(nr,nc)) continue;
           const t=pieceAt(S,nr,nc);
-          if(!t){ out.push({from:[r,c],to:[nr,nc]}); }
-          else{
-            if(t[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:t});
-            break;
+          if(t && t[0]!==S.turn){ pushPawnMove(r,c,nr,nc,t) }
+        }
+        if(S.ep){
+          const [er, ec] = coordOf(S.ep);
+          if(er===r+dir && Math.abs(ec-c)===1){
+            out.push({from:[r,c],to:[er,ec],ep:true});
           }
-          nr+=dr; nc+=dc;
+        }
+        function pushPawnMove(fr,fc,tr,tc,captured=null){
+          const promo = (tr===lastRow);
+          if(promo){
+            for(const toP of ['Q','R','B','N']) out.push({from:[fr,fc],to:[tr,tc],captured, promo:toP});
+          }else{
+            out.push({from:[fr,fc],to:[tr,tc],captured});
+          }
         }
       }
-    }
-
-    function genKing(S,r,c,out){
-      for(let dr=-1; dr<=1; dr++) for(let dc=-1; dc<=1; dc++){
-        if(!dr && !dc) continue;
-        const nr=r+dr, nc=c+dc; if(!inb(nr,nc)) continue;
-        const t=pieceAt(S,nr,nc);
-        if(!t || t[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:t||null});
+      function genKnight(S,r,c,out){
+        const steps=[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
+        for(const [dr,dc] of steps){
+          const nr=r+dr, nc=c+dc; if(!inb(nr,nc)) continue;
+          const t=pieceAt(S,nr,nc);
+          if(!t || t[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:t||null});
+        }
       }
-      // castling
-      const clr=S.turn;
-      const back = (clr==='w')?7:0;
-      if(r===back && c===4){
-        // King side
-        if((clr==='w' && S.castling.wK) || (clr==='b' && S.castling.bK)){
-          if(!pieceAt(S,back,5) && !pieceAt(S,back,6)){
-            if(!isSquareAttacked(S,[back,4],opp(clr)) && !isSquareAttacked(S,[back,5],opp(clr)) && !isSquareAttacked(S,[back,6],opp(clr))){
-              out.push({from:[back,4],to:[back,6],castle:'K'});
+      function genSlider(S,r,c,out,dirs){
+        for(const [dr,dc] of dirs){
+          let nr=r+dr, nc=c+dc;
+          while(inb(nr,nc)){
+            const t=pieceAt(S,nr,nc);
+            if(!t){ out.push({from:[r,c],to:[nr,nc]}); }
+            else{
+              if(t[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:t});
+              break;
+            }
+            nr+=dr; nc+=dc;
+          }
+        }
+      }
+      function genKing(S,r,c,out){
+        for(let dr=-1; dr<=1; dr++) for(let dc=-1; dc<=1; dc++){
+          if(!dr && !dc) continue;
+          const nr=r+dr, nc=c+dc; if(!inb(nr,nc)) continue;
+          const t=pieceAt(S,nr,nc);
+          if(!t || t[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:t||null});
+        }
+        const clr=S.turn;
+        const back = (clr==='w')?7:0;
+        if(r===back && c===4){
+          if((clr==='w' && S.castling.wK) || (clr==='b' && S.castling.bK)){
+            if(!pieceAt(S,back,5) && !pieceAt(S,back,6)){
+              if(!isSquareAttacked(S,[back,4],opp(clr)) && !isSquareAttacked(S,[back,5],opp(clr)) && !isSquareAttacked(S,[back,6],opp(clr))){
+                out.push({from:[back,4],to:[back,6],castle:'K'});
+              }
             }
           }
-        }
-        // Queen side
-        if((clr==='w' && S.castling.wQ) || (clr==='b' && S.castling.bQ)){
-          if(!pieceAt(S,back,3) && !pieceAt(S,back,2) && !pieceAt(S,back,1)){
-            if(!isSquareAttacked(S,[back,4],opp(clr)) && !isSquareAttacked(S,[back,3],opp(clr)) && !isSquareAttacked(S,[back,2],opp(clr))){
-              out.push({from:[back,4],to:[back,2],castle:'Q'});
+          if((clr==='w' && S.castling.wQ) || (clr==='b' && S.castling.bQ)){
+            if(!pieceAt(S,back,3) && !pieceAt(S,back,2) && !pieceAt(S,back,1)){
+              if(!isSquareAttacked(S,[back,4],opp(clr)) && !isSquareAttacked(S,[back,3],opp(clr)) && !isSquareAttacked(S,[back,2],opp(clr))){
+                out.push({from:[back,4],to:[back,2],castle:'Q'});
+              }
             }
           }
         }
@@ -421,30 +315,24 @@
     function opp(c){ return c==='w'?'b':'w' }
 
     function isSquareAttacked(S, [tr,tc], by){
-      // Pawns
       const dir = by==='w'?-1:1;
       for(const dc of [-1,1]){
         const r=tr+dir, c=tc+dc;
         if(inb(r,c)){ const p=pieceAt(S,r,c); if(p && p===(by+'P')) return true; }
       }
-      // Knights
       const steps=[[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]];
       for(const [dr,dc] of steps){
         const r=tr+dr, c=tc+dc; if(inb(r,c)){ const p=pieceAt(S,r,c); if(p && p===(by+'N')) return true; }
       }
-      // Bishops/Queens
       const bDirs=[[1,1],[1,-1],[-1,1],[-1,-1]];
       if(ray(by,'B',bDirs)) return true;
-      // Rooks/Queens
       const rDirs=[[1,0],[-1,0],[0,1],[0,-1]];
       if(ray(by,'R',rDirs)) return true;
-      // King
       for(let dr=-1; dr<=1; dr++) for(let dc=-1; dc<=1; dc++){
         if(!dr && !dc) continue;
         const r=tr+dr, c=tc+dc; if(inb(r,c)){ const p=pieceAt(S,r,c); if(p && p===(by+'K')) return true; }
       }
       return false;
-
       function ray(color, type, dirs){
         for(const [dr,dc] of dirs){
           let r=tr+dr, c=tc+dc;
@@ -464,16 +352,13 @@
     }
 
     function inCheck(S, who){
-      // find king
-      let kr=-1,kc=-1;
       for(let r=0;r<8;r++) for(let c=0;c<8;c++){
-        if(pieceAt(S,r,c)===(who+'K')){ kr=r; kc=c; }
+        if(pieceAt(S,r,c)===(who+'K')) return isSquareAttacked(S,[r,c], opp(who));
       }
-      return isSquareAttacked(S,[kr,kc], opp(who));
+      return false;
     }
 
     function doMove(S, m){
-      // record snapshot
       const snap = {
         board: S.board.slice(),
         turn: S.turn,
@@ -489,24 +374,19 @@
       const moving = pieceAt(S,fr,fc);
       const target = pieceAt(S,tr,tc);
 
-      // halfmove clock
       if(moving[1]==='P' || target) S.halfmove=0; else S.halfmove++;
 
-      // en passant capture
-      if(m.ep){
+      if(S.ep){
         const [er,ec]=coordOf(S.ep);
         if(m.ep && tr===er && tc===ec){
-          // remove captured pawn
           const capr = S.turn==='w' ? tr+1 : tr-1;
           putPiece(S, capr, tc, null);
         }
       }
 
-      // move piece
       putPiece(S, tr, tc, moving);
       putPiece(S, fr, fc, null);
 
-      // castling move rook
       if(m.castle==='K'){
         const back = S.turn==='w'?7:0;
         const rookFrom=[back,7], rookTo=[back,5];
@@ -521,33 +401,15 @@
         putPiece(S, rookFrom[0], rookFrom[1], null);
       }
 
-      // promotion
-      if(m.promo){
-        putPiece(S, tr, tc, S.turn + m.promo);
-      }
+      if(m.promo){ putPiece(S, tr, tc, S.turn + m.promo); }
 
-      // update castling rights
       if(moving==='wK'){ S.castling.wK=false; S.castling.wQ=false }
       if(moving==='bK'){ S.castling.bK=false; S.castling.bQ=false }
-      if(moving==='wR'){
-        if(fr===7 && fc===0) S.castling.wQ=false;
-        if(fr===7 && fc===7) S.castling.wK=false;
-      }
-      if(moving==='bR'){
-        if(fr===0 && fc===0) S.castling.bQ=false;
-        if(fr===0 && fc===7) S.castling.bK=false;
-      }
-      // if rook captured
-      if(target==='wR'){
-        if(tr===7 && tc===0) S.castling.wQ=false;
-        if(tr===7 && tc===7) S.castling.wK=false;
-      }
-      if(target==='bR'){
-        if(tr===0 && tc===0) S.castling.bQ=false;
-        if(tr===0 && tc===7) S.castling.bK=false;
-      }
+      if(moving==='wR'){ if(fr===7 && fc===0) S.castling.wQ=false; if(fr===7 && fc===7) S.castling.wK=false }
+      if(moving==='bR'){ if(fr===0 && fc===0) S.castling.bQ=false; if(fr===0 && fc===7) S.castling.bK=false }
+      if(target==='wR'){ if(tr===7 && tc===0) S.castling.wQ=false; if(tr===7 && tc===7) S.castling.wK=false }
+      if(target==='bR'){ if(tr===0 && tc===0) S.castling.bQ=false; if(tr===0 && tc===7) S.castling.bK=false }
 
-      // set en passant target
       if(m.pawn2){
         const epRow = S.turn==='w' ? tr+1 : tr-1;
         S.ep = algebraic(epRow, tc);
@@ -557,7 +419,7 @@
 
       if(S.turn==='b') S.fullmove++;
       swapTurn(S);
-      S.lastMove = {from:[fr,fc],to:[tr,tc]};
+      S.lastMove = {from:[fr,fc],to:[tr,tc], ...m};
     }
 
     function undoMove(S){
@@ -571,32 +433,22 @@
       S.lastMove = prev.lastMove;
     }
 
-    /*****************
-     * AI / Search   *
-     *****************/
+    /* ---------------------------- AI / Search -------------------------- */
     function evaluate(S){
-      // material + PST + mobility (very light)
       let score=0;
       for(let r=0;r<8;r++) for(let c=0;c<8;c++){
         const p=pieceAt(S,r,c); if(!p) continue;
         const side = (p[0]==='w')?1:-1;
         const type = p[1];
         score += side * PIECE_VALUE[type];
-        // PST
         let sqIndex = r*8+c;
         let table = PST[type];
-        if(p[0]==='w'){
-          score += table[sqIndex];
-        }else{
-          // mirror for black
-          const mr = 7-r, mc = c;
-          score -= table[mr*8+mc];
-        }
+        if(p[0]==='w'){ score += table[sqIndex]; }
+        else{ score -= table[(7-r)*8+c]; }
       }
-      // mobility
       const t= S.turn;
       const ms = allMoves(S).length;
-      S.turn = opp(S.turn);
+      S.turn = (S.turn==='w'?'b':'w');
       const os = allMoves(S).length;
       S.turn = t;
       score += 2*(ms - os);
@@ -607,12 +459,10 @@
       const moves = allMoves(S);
       if(moves.length===0) return null;
       if(level==='beginner'){
-        // random among legal (slightly prefer captures)
         const caps = moves.filter(m=>m.captured);
         if(caps.length) return caps[Math.floor(Math.random()*caps.length)];
         return moves[Math.floor(Math.random()*moves.length)];
       }
-      // expert: alpha-beta depth 3 (adaptive to 4 if fast board)
       const depth = 3;
       let bestScore = -1e9, best = moves[0];
       orderMoves(moves);
@@ -656,7 +506,6 @@
         return alpha;
       }
       function orderMoves(mv){
-        // MVV-LVA and promotions, simple ordering
         mv.sort((a,b)=> scoreMove(b)-scoreMove(a));
         function valOf(p){ return p?PIECE_VALUE[p[1]]:0 }
         function scoreMove(m){
@@ -669,9 +518,7 @@
       }
     }
 
-    /*****************
-     * UI Rendering  *
-     *****************/
+    /* --------------------------- UI Rendering -------------------------- */
     const boardEl = document.getElementById('board');
     const statusEl = document.getElementById('status');
     const evalEl = document.getElementById('eval');
@@ -687,12 +534,11 @@
     const cancelPromo = document.getElementById('cancelPromo');
 
     let S = fenToState(START_FEN);
-    let selected = null;      // [r,c] or null
-    let hints = [];           // list of {to:[r,c], ...}
-    let whiteBottom = true;   // board orientation
+    let selected = null;
+    let hints = [];
+    let whiteBottom = true;
     let lastEval = null;
     let humanColor = 'w';
-    let pendingPromotion = null; // {move, resolve}
 
     function newGame(){
       S = fenToState(START_FEN);
@@ -704,16 +550,14 @@
     }
 
     function render(rebuild=false){
-      // captured
       renderCaptured();
-      // eval
       evalEl.textContent = "Eval: " + (lastEval===null ? "—" : (lastEval/100).toFixed(2));
-      // board
       if(rebuild){
         boardEl.innerHTML="";
         for(let vr=0; vr<8; vr++){
           for(let vc=0; vc<8; vc++){
-            const d=document.createElement('div'); d.className='sq '+(((vr+vc)%2===0)?'light':'dark');
+            const d=document.createElement('button'); d.className='sq '+(((vr+vc)%2===0)?'light':'dark');
+            d.type='button';
             d.dataset.r=vr; d.dataset.c=vc;
             const coord=document.createElement('div'); coord.className='coord';
             d.appendChild(coord);
@@ -722,7 +566,6 @@
           }
         }
       }
-      // paint squares according to orientation
       const kids = [...boardEl.children];
       for(let vr=0; vr<8; vr++){
         for(let vc=0; vc<8; vc++){
@@ -731,24 +574,16 @@
           const tile = kids[idx(vr,vc)];
           const p = pieceAt(S,r,c);
           tile.textContent = p ? PIECE_TO_CHAR[p] : '';
-          tile.classList.remove('sel','hint','move','last','check');
+          tile.classList.remove('sel','hint','move','check');
           tile.querySelector('.coord').textContent =
             (vr===7 ? "abcdefgh"[c] : "") + (vc===0 ? (8-r) : "");
-          // last move mark
           if(S.lastMove){
             const [fr,fc] = S.lastMove.from, [tr,tc]=S.lastMove.to;
             if(fr===r&&fc===c) tile.classList.add('move');
             if(tr===r&&tc===c) tile.classList.add('move');
           }
-          // check mark on king
-          const kPos = findKing(S, S.turn);
-          if(kPos && inCheck(S,S.turn)){
-            const [kr,kc]=kPos;
-            if(kr===r && kc===c) tile.classList.add('check');
-          }
         }
       }
-      // show selection & hints
       if(selected){
         const [sr,sc] = selected;
         const [vr,vc] = orient(sr,sc);
@@ -759,9 +594,7 @@
           kids[idx(vr2,vc2)].classList.add('hint');
         }
       }
-      // moves list
       renderMoves();
-      // status turn
       if(allMoves(S).length===0){
         if(inCheck(S,S.turn)){
           status(`<b>Checkmate.</b> ${S.turn==='w'?'White':'Black'} is mated. ${S.turn==='w'?'Black':'White'} wins.`);
@@ -774,7 +607,6 @@
     }
 
     function renderCaptured(){
-      // compute captured comparing to starting material
       const startCounts = countMaterial(fenToState(START_FEN));
       const nowCounts = countMaterial(S);
       const out=[];
@@ -798,7 +630,6 @@
     }
 
     function renderMoves(){
-      // very simple: show UCI of moves in history
       const lines=[];
       let moveNo=1;
       for(const h of S.history){
@@ -809,7 +640,7 @@
           moveNo++;
         }
       }
-      movesEl.innerHTML = lines.join('<br/>');
+      movesEl.textContent = lines.join('\n');
     }
 
     function uci(m){
@@ -822,38 +653,20 @@
       return s;
     }
 
-    function findKing(S, color){
-      for(let r=0;r<8;r++) for(let c=0;c<8;c++){
-        if(pieceAt(S,r,c)===(color+'K')) return [r,c];
-      }
-      return null;
-    }
-
-    function orient(r,c){
-      return whiteBottom ? [r,c] : [7-r, 7-c];
-    }
-    function deorient(vr,vc){
-      return whiteBottom ? [vr,vc] : [7-vr, 7-vc];
-    }
-
-    function status(html){
-      statusEl.innerHTML = html;
-    }
+    function orient(r,c){ return whiteBottom ? [r,c] : [7-r, 7-c]; }
+    function deorient(vr,vc){ return whiteBottom ? [vr,vc] : [7-vr, 7-vc]; }
+    function status(html){ statusEl.innerHTML = html; }
 
     async function onSquare(e){
-      // ignore if AI's turn
       if(S.turn!==humanColor) return;
-
       const vr = parseInt(e.currentTarget.dataset.r,10);
       const vc = parseInt(e.currentTarget.dataset.c,10);
       const [r,c] = deorient(vr,vc);
       const here = pieceAt(S,r,c);
 
       if(selected){
-        // try move if in hints
         const target = hints.find(h=> h.to[0]===r && h.to[1]===c);
         if(target){
-          // Handle promotion if needed
           let moveToPlay = {...target, from:selected, to:[r,c]};
           if(moveToPlay.promo){
             const choice = await choosePromotion(S.turn);
@@ -862,13 +675,10 @@
           }
           doMove(S, moveToPlay);
           render();
-          window.requestAnimationFrame(()=>{
-            if(allMoves(S).length>0) aiTurn();
-          });
+          requestAnimationFrame(()=>{ if(allMoves(S).length>0) aiTurn() });
           return;
         }
       }
-      // (re)select if your piece
       if(here && here[0]===S.turn && here[0]===humanColor){
         selected = [r,c];
         const all = allMoves(S);
@@ -882,45 +692,47 @@
     function aiTurn(){
       const level = levelSel.value;
       const mv = pickMove(S, level);
-      if(!mv){
-        render();
-        return;
-      }
+      if(!mv){ render(); return; }
       doMove(S, mv);
       render();
     }
 
+    // Promotion chooser with robust fallback if <dialog> unsupported
     function choosePromotion(turn){
+      if(!hasDialog){
+        const ans = (prompt("Promote to (q,r,b,n)?", "q")||"q").toLowerCase();
+        const map = {q:'Q', r:'R', b:'B', n:'N'};
+        return Promise.resolve(map[ans] || 'Q');
+      }
       return new Promise(resolve=>{
-        pendingPromotion = {resolve};
         promoGrid.innerHTML = '';
         const opts = (turn==='w')? ['Q','R','B','N'].map(t=>['w'+t, PIECE_TO_CHAR['w'+t]])
                                   : ['Q','R','B','N'].map(t=>['b'+t, PIECE_TO_CHAR['b'+t]]);
         for(const [code, sym] of opts){
           const btn=document.createElement('button');
           btn.textContent = sym;
-          btn.addEventListener('click', ()=>{
-            promoDialog.close(); pendingPromotion.resolve(code[1]); pendingPromotion=null;
-          });
+          btn.addEventListener('click', ()=>{ promoDialog.close(); resolve(code[1]); });
           promoGrid.appendChild(btn);
         }
-        cancelPromo.onclick = ()=>{ promoDialog.close(); pendingPromotion.resolve(null); pendingPromotion=null; }
+        cancelPromo.onclick = ()=>{ promoDialog.close(); resolve(null); };
         promoDialog.showModal();
       });
     }
 
-    newBtn.addEventListener('click', newGame);
-    undoBtn.addEventListener('click', ()=>{
-      // Undo two plies if last was AI
+    document.getElementById('new').addEventListener('click', newGame);
+    document.getElementById('undo').addEventListener('click', ()=>{
       if(S.history.length===0) return;
       undoMove(S);
       if(S.turn!==humanColor && S.history.length>0) undoMove(S);
       render();
     });
-    flipBtn.addEventListener('click', ()=>{ whiteBottom=!whiteBottom; render(true) });
+    document.getElementById('flip').addEventListener('click', ()=>{ whiteBottom=!whiteBottom; render(true) });
 
-    // Auto-start as White Expert
+    // Auto-start
     newGame();
+
+    // Friendly reminder if someone mistakenly opens the favicon as a page
+    console.log('If you only see a single rook, make sure you opened index.html (not a favicon or SVG). Also use a modern browser.');
   </script>
 </body>
 </html>
