@@ -6,18 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root{
-      /* Layout + theme */
       --bg1:#0e1530; --bg2:#0a0f24; --panel:#141b38; --border:#2a3b6e; --txt:#eaf0ff;
-      /* Board blues (higher contrast) */
       --sq-light:#9ec5ff;  /* light blue */
       --sq-dark:#2d4e85;   /* dark blue */
-      /* Highlights */
       --sel:#ffd166; --hint:#ffe28a; --move:#77e0ff; --check:#ff6b6b;
       --shadow:0 10px 30px rgba(0,0,0,.28); --radius:18px;
     }
     *{box-sizing:border-box}
     body{
-      margin:0; color:var(--txt); background: radial-gradient(1200px 1200px at 80% -10%, #1c2c66 0%, var(--bg1) 55%, var(--bg2) 100%) fixed;
+      margin:0; color:var(--txt);
+      background: radial-gradient(1200px 1200px at 80% -10%, #1c2c66 0%, var(--bg1) 55%, var(--bg2) 100%) fixed;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
     }
     .container{max-width:1120px; margin:0 auto; padding:20px}
@@ -46,14 +44,16 @@
     button:hover, select:hover, input:hover{ filter:brightness(1.08) }
     button:active{ transform:translateY(1px) }
 
-    /* Board: fixed, no jitter */
+    /* Board: fixed 8x8 grid, no jitter */
     .board-wrap{ display:grid; gap:10px }
     .board{
-      width:100%; max-width: min(86vh, 720px); /* cap width on huge desktops */
-      aspect-ratio: 1 / 1; /* keeps perfect square */
-      display:grid; grid-template-columns: repeat(8, 1fr);
+      width:100%; max-width: min(86vh, 720px);
+      aspect-ratio: 1 / 1;               /* keep square when supported */
+      display:grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr); /* ← important */
       border-radius:14px; overflow:hidden; border:2px solid var(--border); user-select:none;
-      margin-inline:auto; /* center */
+      margin-inline:auto;
     }
     .sq{ position:relative; display:grid; place-items:center; cursor:pointer; }
     .light{ background: var(--sq-light) }
@@ -195,8 +195,6 @@
       const dir=by==='w'?-1:1;
       for(const dc of [-1,1]){ const r=tr+dir,c=tc+dc; if(inb(r,c)&&pieceAt(S,r,c)===(by+'P')) return true; }
       for(const [dr,dc] of [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]){ const r=tr+dr,c=tc+dc; if(inb(r,c)&&pieceAt(S,r,c)===(by+'N')) return true; }
-      const rays=(dirs,types)=>{ for(const [dr,dc] of dirs){ let r=tr+dr,c=tc+dc; while(inb(r,c)){ const p=pieceAt(S,r,c); if(p){ if(p[0]===by && (types.includes(p[1])||p[1]==='Q')) return true; break; } r+=dr;c+=dc; } } ;
-      rays([[1,1],[1,-1],[-1,1],[-1,-1]],['B']); if(isAttacked._) return true; // no-op
       const diag=[[1,1],[1,-1],[-1,1],[-1,-1]]; for(const [dr,dc] of diag){ let r=tr+dr,c=tc+dc; while(inb(r,c)){ const p=pieceAt(S,r,c); if(p){ if(p[0]===by && (p[1]==='B'||p[1]==='Q')) return true; break;} r+=dr;c+=dc; } }
       const stra=[[1,0],[-1,0],[0,1],[0,-1]]; for(const [dr,dc] of stra){ let r=tr+dr,c=tc+dc; while(inb(r,c)){ const p=pieceAt(S,r,c); if(p){ if(p[0]===by && (p[1]==='R'||p[1]==='Q')) return true; break;} r+=dr;c+=dc; } }
       for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ if(!dr&&!dc)continue; const r=tr+dr,c=tc+dc; if(inb(r,c)&&pieceAt(S,r,c)===(by+'K')) return true; }
@@ -263,7 +261,6 @@
         sc += s*PIECE_VALUE[t];
         sc += (p[0]==='w' ? PST[t][r*8+c] : -PST[t][(7-r)*8+c]);
       }
-      // simple mobility term
       const t=S.turn, ms=allMoves(S).length; S.turn=opp(S.turn); const os=allMoves(S).length; S.turn=t; sc += 2*(ms-os);
       return sc;
     }
@@ -305,6 +302,15 @@
 
     let S = fenToState(START_FEN);
     let selected=null, hints=[], whiteBottom=true, lastEval=null, humanColor='w';
+
+    // --- Board size fallback: keep height = width even if aspect-ratio fails ---
+    function sizeBoard(){
+      const w = boardEl.getBoundingClientRect().width;
+      if (w > 0) boardEl.style.height = w + 'px';
+    }
+    window.addEventListener('resize', sizeBoard);
+    try { new ResizeObserver(sizeBoard).observe(boardEl); } catch(e) {}
+    sizeBoard();
 
     // Clocks
     let clock = { w: 300000, b: 300000 }; // ms
@@ -363,7 +369,7 @@
     }
 
     function render(){
-      // Eval: show engine eval if available (Expert), else live static eval
+      // Eval
       const liveEval = evaluate(S);
       const show = (lastEval!==null ? lastEval : liveEval);
       evalEl.textContent = formatEval(show);
@@ -405,6 +411,7 @@
         status(`Turn: <b>${S.turn==='w'?'White':'Black'}</b>${inCheck(S,S.turn)?' — <span style="color:var(--check)">Check!</span>':''}`);
       }
       updateClockDom();
+      sizeBoard(); // keep square after reflow
     }
 
     function renderCaptured(){
@@ -448,7 +455,6 @@
     }
 
     function aiTurn(){
-      // clock keeps running for the side to move (as in real chess)
       const mv=pickMove(S, levelSel.value);
       if(!mv){ render(); return; }
       doMove(S,mv); render();
