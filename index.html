@@ -2,116 +2,172 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Web Chess — Beginner & Expert (stable)</title>
+  <title>Online Chess — Stable + Timers + Eval</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root{
-      --panel:#171a2b; --light:#e6ecff; --danger:#ff7a7a;
-      --square-dark:#3c4a6b; --square-light:#b9c6ea;
-      --hint:#ffe28a; --sel:#ffd166;
-      --shadow:0 10px 30px rgba(0,0,0,.25); --radius:18px;
+      /* Layout + theme */
+      --bg1:#0e1530; --bg2:#0a0f24; --panel:#141b38; --border:#2a3b6e; --txt:#eaf0ff;
+      /* Board blues (higher contrast) */
+      --sq-light:#9ec5ff;  /* light blue */
+      --sq-dark:#2d4e85;   /* dark blue */
+      /* Highlights */
+      --sel:#ffd166; --hint:#ffe28a; --move:#77e0ff; --check:#ff6b6b;
+      --shadow:0 10px 30px rgba(0,0,0,.28); --radius:18px;
     }
     *{box-sizing:border-box}
     body{
-      margin:0; min-height:100dvh; color:var(--light);
-      background: radial-gradient(1200px 1200px at 80% -10%, #2c3a66 0%, #121528 60%, #0c0f1e 100%) fixed;
+      margin:0; color:var(--txt); background: radial-gradient(1200px 1200px at 80% -10%, #1c2c66 0%, var(--bg1) 55%, var(--bg2) 100%) fixed;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-      display:grid; place-items:center; padding:20px;
     }
-    .app{ width:min(1080px,98vw); display:grid; grid-template-columns: 1fr 340px; gap:18px; }
+    .container{max-width:1120px; margin:0 auto; padding:20px}
+    .app{ display:grid; grid-template-columns: minmax(320px, 1fr) 360px; gap:18px }
     @media (max-width: 980px){ .app{ grid-template-columns: 1fr } }
-    .board-wrap{ background:linear-gradient(180deg,#1c2242,#12172f); padding:18px; border-radius:var(--radius); box-shadow:var(--shadow); display:grid; grid-template-rows:auto 1fr auto; gap:12px; }
-    .bar{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
-    .bar h1{font-size:18px; margin:0; opacity:.9}
-    .chip, select, button{
-      background:var(--panel); border:1px solid #2a3158; color:var(--light);
+
+    .left{
+      background:linear-gradient(180deg,#1a2350,#11172f);
+      border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:16px; display:grid; gap:12px; grid-template-rows: auto auto 1fr auto;
+    }
+    .right{
+      background:linear-gradient(180deg,#151b3a,#0e142c);
+      border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow);
+      padding:16px; display:grid; gap:14px; align-content:start;
+    }
+
+    .bar{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap }
+    .h1{ font-weight:700; letter-spacing:.3px; opacity:.95 }
+    .controls, .timer-row{ display:flex; gap:8px; align-items:center; flex-wrap:wrap }
+    .chip, select, button, input{
+      background:var(--panel); color:var(--txt); border:1px solid var(--border);
       padding:8px 12px; border-radius:12px; font-weight:600;
     }
-    button.primary{background:#2b3564; border-color:#2f6fee}
-    button:hover, select:hover{filter:brightness(1.08)}
+    button.primary{ background:#2a3569; border-color:#3451c7 }
+    button:hover, select:hover, input:hover{ filter:brightness(1.08) }
+    button:active{ transform:translateY(1px) }
+
+    /* Board: fixed, no jitter */
+    .board-wrap{ display:grid; gap:10px }
     .board{
-      width:100%; aspect-ratio:1/1; display:grid; grid-template-columns:repeat(8,1fr);
-      border-radius:14px; overflow:hidden; border:2px solid #2a3158; user-select:none;
+      width:100%; max-width: min(86vh, 720px); /* cap width on huge desktops */
+      aspect-ratio: 1 / 1; /* keeps perfect square */
+      display:grid; grid-template-columns: repeat(8, 1fr);
+      border-radius:14px; overflow:hidden; border:2px solid var(--border); user-select:none;
+      margin-inline:auto; /* center */
     }
     .sq{ position:relative; display:grid; place-items:center; cursor:pointer; }
-    .sq .piece{ font-size: clamp(28px, 5vw, 54px); line-height:1 }
-    .light{ background: var(--square-light) }
-    .dark{ background: var(--square-dark) }
-    .coord{ position:absolute; left:6px; top:4px; font-size:12px; opacity:.5; color:#0e1326; font-weight:700; mix-blend-mode: soft-light; }
-    .dark .coord{ color:#cdd7ff; mix-blend-mode:normal; opacity:.35 }
-    .sq.sel{outline:3px solid var(--sel); z-index:2}
-    .sq.move{ box-shadow: inset 0 0 0 4px rgba(119,224,255,.8) }
-    .sq.hint::after{ content:""; width:16px; height:16px; border-radius:50%; background:var(--hint); opacity:.95; box-shadow:0 0 0 4px rgba(0,0,0,.12); }
-    .sq.check{ box-shadow: inset 0 0 0 4px var(--danger) }
-    .right{ background:linear-gradient(180deg,#141831,#0f132a); border:1px solid #2a3158; border-radius:var(--radius); box-shadow:var(--shadow); padding:16px; display:grid; gap:14px; align-content:start; }
-    .status{ background:#0d1125; border:1px solid #2a3158; border-radius:12px; padding:12px; min-height:48px }
-    .moves{ background:#0d1125; border:1px solid #2a3158; border-radius:12px; padding:10px; height:260px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas; font-size:13px; line-height:1.55; white-space:pre-wrap }
-    dialog{ border:none; border-radius:16px; padding:0; overflow:hidden; box-shadow:var(--shadow); background:#101632; color:var(--light) }
-    .modal{padding:14px 16px; display:grid; gap:12px}
-    .promo-grid{ display:grid; grid-template-columns: repeat(4, 60px); gap:8px; justify-content:center }
-    .promo-grid button{font-size:28px; padding:10px; background:#1b244b; border:1px solid #2a3158; border-radius:12px; cursor:pointer}
+    .light{ background: var(--sq-light) }
+    .dark{  background: var(--sq-dark)  }
+    .piece{ font-size: clamp(30px, 5vw, 56px); line-height:1; text-shadow: 0 1px 0 rgba(0,0,0,.35), 0 2px 4px rgba(0,0,0,.25) }
+    .coord{ position:absolute; left:6px; top:5px; font-size:12px; opacity:.55; font-weight:700; color:#0a1127; mix-blend-mode: soft-light }
+    .dark .coord{ color:#dfe8ff; opacity:.4; mix-blend-mode:normal }
+
+    .sq.sel{ outline:3px solid var(--sel) }
+    .sq.hint::after{ content:""; width:16px; height:16px; border-radius:50%; background:var(--hint); opacity:.95; box-shadow:0 0 0 4px rgba(0,0,0,.14) }
+    .sq.move{ box-shadow: inset 0 0 0 4px rgba(119,224,255,.85) }
+    .sq.check{ box-shadow: inset 0 0 0 4px var(--check) }
+
+    .status{ background:#0e1430; border:1px solid var(--border); border-radius:12px; padding:10px; min-height:44px }
+    .panel{ background:#0e1430; border:1px solid var(--border); border-radius:12px; padding:10px }
+
+    .clocks{ display:grid; grid-template-columns: 1fr 1fr; gap:10px }
+    .clock{ background:#0e1430; border:1px solid var(--border); border-radius:12px; padding:10px; text-align:center; font-variant-numeric: tabular-nums; }
+    .clock.turn{ outline:2px solid #49c2ff; box-shadow:0 0 0 2px rgba(73,194,255,.25) inset }
+
+    .moves{ height:260px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas; font-size:13px; line-height:1.55; white-space:pre-wrap }
+    .small{ font-size:12px; opacity:.75 }
   </style>
 </head>
 <body>
-  <div class="app">
-    <div class="board-wrap">
-      <div class="bar">
-        <h1>♟ Web Chess</h1>
-        <div class="controls">
-          <label class="chip">Side:
-            <select id="side">
-              <option value="white">White</option>
-              <option value="black">Black</option>
-            </select>
-          </label>
-          <label class="chip">Level:
-            <select id="level">
-              <option value="beginner">Beginner</option>
-              <option value="expert" selected>Expert</option>
-            </select>
-          </label>
-          <button id="new" class="primary">New Game</button>
-          <button id="undo">Undo</button>
-          <button id="flip">Flip</button>
+  <div class="container">
+    <div class="app">
+      <section class="left">
+        <div class="bar">
+          <div class="h1">♟ Online Chess</div>
+          <div class="controls">
+            <label class="chip">Side:
+              <select id="side">
+                <option value="white">White</option>
+                <option value="black">Black</option>
+              </select>
+            </label>
+            <label class="chip">Level:
+              <select id="level">
+                <option value="beginner">Beginner</option>
+                <option value="expert" selected>Expert</option>
+              </select>
+            </label>
+            <button id="new" class="primary">New Game</button>
+            <button id="undo">Undo</button>
+            <button id="flip">Flip</button>
+          </div>
         </div>
-      </div>
 
-      <div id="board" class="board" aria-label="Chessboard"></div>
+        <!-- Timer controls -->
+        <div class="timer-row">
+          <label class="chip">Timer:
+            <select id="timeControl">
+              <option value="0">Off</option>
+              <option value="60">1 min</option>
+              <option value="180">3 min</option>
+              <option value="300" selected>5 min</option>
+              <option value="600">10 min</option>
+            </select>
+          </label>
+          <button id="startPause">Start</button>
+          <button id="resetClock">Reset Clock</button>
+        </div>
 
-      <div class="bar">
-        <div class="chip">Eval: <span id="eval">—</span></div>
-        <div id="status" class="chip">Welcome! Choose side & level, then press <b>New Game</b>.</div>
-      </div>
+        <!-- Board -->
+        <div class="board-wrap">
+          <div id="board" class="board" aria-label="Chessboard"></div>
+        </div>
+
+        <!-- Status + Eval -->
+        <div class="bar">
+          <div id="evalWrap" class="chip">Eval: <span id="eval">—</span></div>
+          <div id="status" class="status">Welcome! Choose side & level, then press <b>New Game</b>.</div>
+        </div>
+      </section>
+
+      <aside class="right">
+        <div class="clocks">
+          <div id="clockW" class="clock">White ⏱ <div id="cw">05:00.0</div></div>
+          <div id="clockB" class="clock">Black ⏱ <div id="cb">05:00.0</div></div>
+        </div>
+        <div class="panel">
+          <b>Captured</b>
+          <div id="captured" style="margin-top:6px;font-size:22px;display:flex;gap:6px;flex-wrap:wrap"></div>
+        </div>
+        <div class="panel">
+          <b>Move List</b>
+          <div id="moves" class="moves" aria-live="polite"></div>
+        </div>
+        <div class="small">Tip: Pieces are black/white Unicode on dark/light blue squares. Click a piece, then a highlighted square. Promotions will ask what you want.</div>
+      </aside>
     </div>
-
-    <aside class="right">
-      <div><b>Captured</b><div id="captured" style="margin-top:6px;font-size:20px;display:flex;gap:6px;flex-wrap:wrap"></div></div>
-      <div><b>Move List</b><div id="moves" class="moves" aria-live="polite"></div></div>
-      <div style="font-size:12px;opacity:.75">Tip: Click a piece, then a highlighted square. Promotions will ask what you want.</div>
-    </aside>
   </div>
 
-  <!-- Promotion Modal (has prompt() fallback if <dialog> unsupported) -->
+  <!-- Promotion modal (has prompt() fallback) -->
   <dialog id="promoDialog">
-    <div class="modal">
+    <div style="padding:14px 16px; display:grid; gap:12px">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
         <strong>Choose promotion</strong>
         <button id="cancelPromo" class="chip">Cancel</button>
       </div>
-      <div class="promo-grid" id="promoGrid"></div>
+      <div class="promo-grid" id="promoGrid" style="display:grid;grid-template-columns:repeat(4,60px);gap:8px;justify-content:center"></div>
     </div>
   </dialog>
 
   <script>
-    /* ---------- Safe utilities ---------- */
+    /* ---------------- Safe utilities ---------------- */
     const safeClone = (obj) =>
       (typeof window.structuredClone === "function")
         ? window.structuredClone(obj)
         : JSON.parse(JSON.stringify(obj));
     const hasDialog = typeof HTMLDialogElement !== "undefined";
-    (function(){ if(!window.console){ window.console = {log:()=>{}, warn:()=>{}, error:()=>{}} } })();
 
-    /* ---------- Chess Core ---------- */
+    /* ---------------- Chess Core ---------------- */
     const PIECE_TO_CHAR = { wP:'♙', wN:'♘', wB:'♗', wR:'♖', wQ:'♕', wK:'♔', bP:'♟', bN:'♞', bB:'♝', bR:'♜', bQ:'♛', bK:'♚' };
     const PIECE_VALUE = { P:100, N:320, B:330, R:500, Q:900, K:20000 };
     const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
@@ -125,39 +181,46 @@
     };
     const idx=(r,c)=>r*8+c, inb=(r,c)=>r>=0&&r<8&&c>=0&&c<8, alg=(r,c)=>"abcdefgh"[c]+(8-r), opp=c=>c==='w'?'b':'w';
     const coordOf = sq => [8-parseInt(sq[1]), "abcdefgh".indexOf(sq[0])];
+    const pieceAt=(S,r,c)=>S.board[idx(r,c)];
+    const put=(S,r,c,p)=>{S.board[idx(r,c)]=p};
 
     function fenToState(f){
-      const [piece,turn,cast,ep,half,full]=f.split(/\s+/); const rows=piece.split('/'); const board=Array(64).fill(null);
-      rows.forEach((row,r)=>{ let c=0; for(const ch of row){ if(/\d/.test(ch)) c+=+ch; else{ const clr=(ch===ch.toUpperCase())?'w':'b'; board[idx(r,c)]=clr+ch.toUpperCase(); c++; } }});
+      const [piece,turn,cast,ep,half,full]=f.split(/\s+/);
+      const board=Array(64).fill(null), rows=piece.split('/');
+      rows.forEach((row,r)=>{ let c=0; for(const ch of row){ if(/\d/.test(ch)) c+=+ch; else { const clr=(ch===ch.toUpperCase())?'w':'b'; board[idx(r,c)]=clr+ch.toUpperCase(); c++; } }});
       const cr={wK:false,wQ:false,bK:false,bQ:false}; if(cast.includes('K'))cr.wK=true; if(cast.includes('Q'))cr.wQ=true; if(cast.includes('k'))cr.bK=true; if(cast.includes('q'))cr.bQ=true;
       return {board, turn, castling:cr, ep: ep==='-'?null:ep, halfmove:+(half||0), fullmove:+(full||1), history:[], lastMove:null};
     }
-    const pieceAt=(S,r,c)=>S.board[idx(r,c)];
-    const put=(S,r,c,p)=>{S.board[idx(r,c)]=p};
     function isAttacked(S,[tr,tc],by){
       const dir=by==='w'?-1:1;
       for(const dc of [-1,1]){ const r=tr+dir,c=tc+dc; if(inb(r,c)&&pieceAt(S,r,c)===(by+'P')) return true; }
       for(const [dr,dc] of [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]){ const r=tr+dr,c=tc+dc; if(inb(r,c)&&pieceAt(S,r,c)===(by+'N')) return true; }
-      const rays=(dirs,types)=>{ for(const [dr,dc] of dirs){ let r=tr+dr,c=tc+dc; while(inb(r,c)){ const p=pieceAt(S,r,c); if(p){ if(p[0]===by && (types.includes(p[1])||p[1]==='Q')) return true; break; } r+=dr;c+=dc; } } return false };
-      if(rays([[1,1],[1,-1],[-1,1],[-1,-1]],['B'])) return true;
-      if(rays([[1,0],[-1,0],[0,1],[0,-1]],['R'])) return true;
+      const rays=(dirs,types)=>{ for(const [dr,dc] of dirs){ let r=tr+dr,c=tc+dc; while(inb(r,c)){ const p=pieceAt(S,r,c); if(p){ if(p[0]===by && (types.includes(p[1])||p[1]==='Q')) return true; break; } r+=dr;c+=dc; } } ;
+      rays([[1,1],[1,-1],[-1,1],[-1,-1]],['B']); if(isAttacked._) return true; // no-op
+      const diag=[[1,1],[1,-1],[-1,1],[-1,-1]]; for(const [dr,dc] of diag){ let r=tr+dr,c=tc+dc; while(inb(r,c)){ const p=pieceAt(S,r,c); if(p){ if(p[0]===by && (p[1]==='B'||p[1]==='Q')) return true; break;} r+=dr;c+=dc; } }
+      const stra=[[1,0],[-1,0],[0,1],[0,-1]]; for(const [dr,dc] of stra){ let r=tr+dr,c=tc+dc; while(inb(r,c)){ const p=pieceAt(S,r,c); if(p){ if(p[0]===by && (p[1]==='R'||p[1]==='Q')) return true; break;} r+=dr;c+=dc; } }
       for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ if(!dr&&!dc)continue; const r=tr+dr,c=tc+dc; if(inb(r,c)&&pieceAt(S,r,c)===(by+'K')) return true; }
       return false;
     }
     function inCheck(S,who){ for(let r=0;r<8;r++)for(let c=0;c<8;c++){ if(pieceAt(S,r,c)===(who+'K')) return isAttacked(S,[r,c],opp(who)); } return false; }
+
     function allMoves(S){
       const out=[];
-      for(let r=0;r<8;r++)for(let c=0;c<8;c++){ const p=pieceAt(S,r,c); if(!p||p[0]!==S.turn) continue;
+      for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+        const p=pieceAt(S,r,c); if(!p||p[0]!==S.turn) continue;
         const t=p[1];
         if(t==='P'){ const dir=S.turn==='w'?-1:1, start=S.turn==='w'?6:1, last=S.turn==='w'?0:7;
           if(inb(r+dir,c)&&!pieceAt(S,r+dir,c)){ pushPawn(r,c,r+dir,c); if(r===start && !pieceAt(S,r+2*dir,c)) out.push({from:[r,c],to:[r+2*dir,c],pawn2:true}); }
-          for(const dc of [-1,1]){ const nr=r+dir,nc=c+dc; if(!inb(nr,nc))continue; const t=pieceAt(S,nr,nc); if(t&&t[0]!==S.turn) pushPawn(r,c,nr,nc,t); }
+          for(const dc of [-1,1]){ const nr=r+dir,nc=c+dc; if(!inb(nr,nc))continue; const q=pieceAt(S,nr,nc); if(q&&q[0]!==S.turn) pushPawn(r,c,nr,nc,q); }
           if(S.ep){ const [er,ec]=coordOf(S.ep); if(er===r+dir && Math.abs(ec-c)===1) out.push({from:[r,c],to:[er,ec],ep:true}); }
           function pushPawn(fr,fc,tr,tc,captured=null){ const promo=tr===last; if(promo){ for(const pp of ['Q','R','B','N']) out.push({from:[fr,fc],to:[tr,tc],captured,promo:pp}); } else out.push({from:[fr,fc],to:[tr,tc],captured}); }
-        } else if(t==='N'){ for(const [dr,dc] of [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]){ const nr=r+dr,nc=c+dc; if(!inb(nr,nc))continue; const q=pieceAt(S,nr,nc); if(!q||q[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:q||null}); } }
-        else if(t==='B'||t==='R'||t==='Q'){ const dirs=t==='B'?[[1,1],[1,-1],[-1,1],[-1,-1]]:t==='R'?[[1,0],[-1,0],[0,1],[0,-1]]:[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];
+        } else if(t==='N'){
+          for(const [dr,dc] of [[2,1],[2,-1],[-2,1],[-2,-1],[1,2],[1,-2],[-1,2],[-1,-2]]){ const nr=r+dr,nc=c+dc; if(!inb(nr,nc))continue; const q=pieceAt(S,nr,nc); if(!q||q[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:q||null}); }
+        } else if(t==='B'||t==='R'||t==='Q'){
+          const dirs=t==='B'?[[1,1],[1,-1],[-1,1],[-1,-1]]:t==='R'?[[1,0],[-1,0],[0,1],[0,-1]]:[[1,1],[1,-1],[-1,1],[-1,-1],[1,0],[-1,0],[0,1],[0,-1]];
           for(const [dr,dc] of dirs){ let nr=r+dr,nc=c+dc; while(inb(nr,nc)){ const q=pieceAt(S,nr,nc); if(!q) out.push({from:[r,c],to:[nr,nc]}); else { if(q[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:q}); break; } nr+=dr; nc+=dc; } }
-        } else if(t==='K'){ for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ if(!dr&&!dc)continue; const nr=r+dr,nc=c+dc; if(!inb(nr,nc))continue; const q=pieceAt(S,nr,nc); if(!q||q[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:q||null}); }
+        } else if(t==='K'){
+          for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){ if(!dr&&!dc)continue; const nr=r+dr,nc=c+dc; if(!inb(nr,nc))continue; const q=pieceAt(S,nr,nc); if(!q||q[0]!==S.turn) out.push({from:[r,c],to:[nr,nc],captured:q||null}); }
           const clr=S.turn, back=clr==='w'?7:0;
           if(r===back&&c===4){
             if((clr==='w'&&S.castling.wK)||(clr==='b'&&S.castling.bK)){
@@ -170,7 +233,7 @@
         }
       }
       const legal=[];
-      for(const m of out){ doMove(S,m); const bad=inCheck(S,opp(S.turn)); undoMove(S); if(!bad) legal.push(m); }
+      for(const m of out){ doMove(S,m); const illegal=inCheck(S,opp(S.turn)); undoMove(S); if(!illegal) legal.push(m); }
       return legal;
     }
     function doMove(S,m){
@@ -194,12 +257,18 @@
     function undoMove(S){ const h=S.history.pop(); if(!h) return; Object.assign(S,{board:h.board,turn:h.turn,castling:h.castling,ep:h.ep,halfmove:h.halfmove,fullmove:h.fullmove,lastMove:h.lastMove}); }
     function evaluate(S){
       let sc=0;
-      for(let r=0;r<8;r++)for(let c=0;c<8;c++){ const p=pieceAt(S,r,c); if(!p)continue; const s=p[0]==='w'?1:-1, t=p[1];
-        sc+=s*PIECE_VALUE[t]; sc+= (p[0]==='w'? 1:-1) * (p[0]==='w'? PST[t][r*8+c] : -PST[t][(7-r)*8+c]);
+      for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+        const p=pieceAt(S,r,c); if(!p) continue;
+        const s=p[0]==='w'?1:-1, t=p[1];
+        sc += s*PIECE_VALUE[t];
+        sc += (p[0]==='w' ? PST[t][r*8+c] : -PST[t][(7-r)*8+c]);
       }
-      const t=S.turn, ms=allMoves(S).length; S.turn=opp(S.turn); const os=allMoves(S).length; S.turn=t; sc+=2*(ms-os);
+      // simple mobility term
+      const t=S.turn, ms=allMoves(S).length; S.turn=opp(S.turn); const os=allMoves(S).length; S.turn=t; sc += 2*(ms-os);
       return sc;
     }
+    function formatEval(cp){ const pawns=(cp/100).toFixed(2); return (cp>=0?'+':'')+pawns; }
+
     function pickMove(S, level){
       const moves=allMoves(S); if(!moves.length) return null;
       if(level==='beginner'){ const caps=moves.filter(m=>m.captured); return (caps.length?caps:moves)[Math.floor(Math.random()*(caps.length?caps.length:moves.length))]; }
@@ -212,7 +281,7 @@
       function order(mv){ mv.sort((A,B)=>score(B)-score(A)); function v(p){return p?PIECE_VALUE[p[1]]:0} function score(m){ let s=0; if(m.captured)s+=1000+v(m.captured); if(m.promo)s+=800+PIECE_VALUE[m.promo]; if(m.castle)s+=200; return s; } }
     }
 
-    /* ---------- UI ---------- */
+    /* ---------------- UI / State ---------------- */
     const boardEl = document.getElementById('board');
     const statusEl = document.getElementById('status');
     const evalEl = document.getElementById('eval');
@@ -220,15 +289,56 @@
     const capturedEl = document.getElementById('captured');
     const levelSel = document.getElementById('level');
     const sideSel = document.getElementById('side');
+    const timeSel = document.getElementById('timeControl');
     const newBtn = document.getElementById('new');
     const undoBtn = document.getElementById('undo');
     const flipBtn = document.getElementById('flip');
+    const startPauseBtn = document.getElementById('startPause');
+    const resetClockBtn = document.getElementById('resetClock');
     const promoDialog = document.getElementById('promoDialog');
     const promoGrid = document.getElementById('promoGrid');
     const cancelPromo = document.getElementById('cancelPromo');
+    const clockW = document.getElementById('clockW');
+    const clockB = document.getElementById('clockB');
+    const cw = document.getElementById('cw');
+    const cb = document.getElementById('cb');
 
     let S = fenToState(START_FEN);
-    let selected = null, hints = [], whiteBottom = true, lastEval = null, humanColor = 'w';
+    let selected=null, hints=[], whiteBottom=true, lastEval=null, humanColor='w';
+
+    // Clocks
+    let clock = { w: 300000, b: 300000 }; // ms
+    let running = false;
+    let lastTick = null;
+    function setBaseClock(seconds){
+      clock.w = seconds*1000;
+      clock.b = seconds*1000;
+      updateClockDom();
+    }
+    function updateClockDom(){
+      function fmt(ms){ ms=Math.max(0,ms); const m=Math.floor(ms/60000), s=Math.floor((ms%60000)/1000), d=Math.floor((ms%1000)/100); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${d}` }
+      cw.textContent = fmt(clock.w);
+      cb.textContent = fmt(clock.b);
+      clockW.classList.toggle('turn', S.turn==='w' && running);
+      clockB.classList.toggle('turn', S.turn==='b' && running);
+    }
+    function tick(ts){
+      if(!running){ lastTick=null; return; }
+      if(lastTick==null) lastTick=ts;
+      const dt = ts - lastTick; lastTick = ts;
+      if(S.turn==='w') clock.w -= dt; else clock.b -= dt;
+      if(clock.w<=0 || clock.b<=0){
+        running=false; updateClockDom();
+        const loser = (clock.w<=0)?'White':'Black';
+        statusEl.innerHTML = `<b>Time out.</b> ${loser} loses on time.`;
+        return;
+      }
+      updateClockDom();
+      requestAnimationFrame(tick);
+    }
+    function startClock(){ if(timeSel.value==='0'){ running=false; updateClockDom(); return; } if(!running){ running=true; requestAnimationFrame(tick); } startPauseBtn.textContent='Pause'; }
+    function pauseClock(){ running=false; startPauseBtn.textContent='Start'; updateClockDom(); }
+    function resetClock(){ setBaseClock(+timeSel.value||0); pauseClock(); }
 
     function status(html){ statusEl.innerHTML = html; }
     const orient = (r,c)=> whiteBottom?[r,c]:[7-r,7-c];
@@ -243,11 +353,8 @@
           btn.className='sq '+(((vr+vc)%2===0)?'light':'dark');
           btn.dataset.r=vr; btn.dataset.c=vc;
 
-          const piece=document.createElement('div');
-          piece.className='piece'; btn.appendChild(piece);
-
-          const coord=document.createElement('div');
-          coord.className='coord'; btn.appendChild(coord);
+          const piece=document.createElement('div'); piece.className='piece'; btn.appendChild(piece);
+          const coord=document.createElement('div'); coord.className='coord'; btn.appendChild(coord);
 
           btn.addEventListener('click', onSquare);
           boardEl.appendChild(btn);
@@ -256,10 +363,11 @@
     }
 
     function render(){
-      // eval
-      evalEl.textContent = (lastEval===null ? '—' : (lastEval/100).toFixed(2));
+      // Eval: show engine eval if available (Expert), else live static eval
+      const liveEval = evaluate(S);
+      const show = (lastEval!==null ? lastEval : liveEval);
+      evalEl.textContent = formatEval(show);
 
-      // board
       const kids=[...boardEl.children];
       for(let vr=0;vr<8;vr++){
         for(let vc=0;vc<8;vc++){
@@ -268,41 +376,35 @@
           const pieceEl = tile.querySelector('.piece');
           const coordEl = tile.querySelector('.coord');
 
-          // glyph
           const p=pieceAt(S,r,c);
           pieceEl.textContent = p ? PIECE_TO_CHAR[p] : '';
 
-          // classes
           tile.classList.remove('sel','hint','move','check');
 
-          // coords
           coordEl.textContent = (vr===7 ? "abcdefgh"[c] : "") + (vc===0 ? (8-r) : "");
 
-          // last move
           if(S.lastMove){
             const [fr,fc]=S.lastMove.from,[tr,tc]=S.lastMove.to;
             if((fr===r&&fc===c)||(tr===r&&tc===c)) tile.classList.add('move');
           }
         }
       }
-
-      // selection + hints
       if(selected){
         const [sr,sc]=selected; const [svr,svc]=orient(sr,sc);
         kids[idx(svr,svc)].classList.add('sel');
         for(const h of hints){ const [tr,tc]=h.to; const [tvr,tvc]=orient(tr,tc); kids[idx(tvr,tvc)].classList.add('hint'); }
       }
-
-      // captured & moves
       renderCaptured(); renderMoves();
 
-      // status
       const legal=allMoves(S);
       if(!legal.length){
-        status(inCheck(S,S.turn) ? `<b>Checkmate.</b> ${S.turn==='w'?'White':'Black'} is mated.` : `<b>Stalemate.</b> Draw.`);
+        if(inCheck(S,S.turn)) status(`<b>Checkmate.</b> ${S.turn==='w'?'White':'Black'} is mated. ${S.turn==='w'?'Black':'White'} wins.`);
+        else status(`<b>Stalemate.</b> Draw.`);
+        pauseClock();
       } else {
-        status(`Turn: <b>${S.turn==='w'?'White':'Black'}</b>${inCheck(S,S.turn)?' — <span style="color:var(--danger)">Check!</span>':''}`);
+        status(`Turn: <b>${S.turn==='w'?'White':'Black'}</b>${inCheck(S,S.turn)?' — <span style="color:var(--check)">Check!</span>':''}`);
       }
+      updateClockDom();
     }
 
     function renderCaptured(){
@@ -314,7 +416,7 @@
     function renderMoves(){
       const lines=[]; let n=1;
       for(const h of S.history){
-        if(h.turn==='w') lines.push(`${n}. ${uci(h.lastMove) } `);
+        if(h.turn==='w') lines.push(`${n}. ${uci(h.lastMove)} `);
         else { lines[lines.length-1]=(lines[lines.length-1]||'')+`${uci(h.lastMove)}`; n++; }
       }
       movesEl.textContent = lines.join('\n');
@@ -335,7 +437,7 @@
             if(!choice){ selected=null; hints=[]; render(); return; }
             move.promo=choice;
           }
-          doMove(S,move); selected=null; hints=[]; render();
+          doMove(S,move); selected=null; hints=[]; lastEval=null; render();
           requestAnimationFrame(()=>{ if(allMoves(S).length) aiTurn(); });
           return;
         }
@@ -346,6 +448,7 @@
     }
 
     function aiTurn(){
+      // clock keeps running for the side to move (as in real chess)
       const mv=pickMove(S, levelSel.value);
       if(!mv){ render(); return; }
       doMove(S,mv); render();
@@ -367,15 +470,29 @@
       S=fenToState(START_FEN); selected=null; hints=[]; lastEval=null;
       humanColor = (sideSel.value==='white')?'w':'b';
       buildBoard(); render();
-      status("Game started. You are <b>"+(humanColor==='w'?'White':'Black')+"</b>. Level: <b>"+levelSel.value+"</b>.");
-      if(S.turn!==humanColor) setTimeout(aiTurn, 200);
+      status(`Game started. You are <b>${humanColor==='w'?'White':'Black'}</b>. Level: <b>${levelSel.value}</b>.`);
+      resetClock();
+      if(S.turn!==humanColor) setTimeout(aiTurn, 120);
     }
 
+    // Events
     newBtn.addEventListener('click', newGame);
-    undoBtn.addEventListener('click', ()=>{ if(!S.history.length) return; undoMove(S); if(S.turn!==humanColor && S.history.length) undoMove(S); render(); });
+    undoBtn.addEventListener('click', ()=>{
+      if(!S.history.length) return;
+      undoMove(S);
+      if(S.turn!==humanColor && S.history.length) undoMove(S);
+      lastEval=null; render();
+    });
     flipBtn.addEventListener('click', ()=>{ whiteBottom=!whiteBottom; render(); });
 
+    startPauseBtn.addEventListener('click', ()=>{
+      if(!running){ startClock(); } else { pauseClock(); }
+    });
+    resetClockBtn.addEventListener('click', resetClock);
+    timeSel.addEventListener('change', ()=>{ resetClock(); });
+
     // Boot
+    setBaseClock(+timeSel.value||0);
     buildBoard(); newGame();
   </script>
 </body>
